@@ -1,8 +1,8 @@
 #pragma once
-class CSCene
+class CScene
 {
 public:
-	CSCene();
-	~CSCene();
+	CScene();
+	~CScene();
 };
 
