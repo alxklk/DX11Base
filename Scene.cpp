@@ -1,12 +1,12 @@
 #include "stdafx.h"
-#include "SCene.h"
+#include "Scene.h"
 
 
-CSCene::CSCene()
+CScene::CScene()
 {
 }
 
 
-CSCene::~CSCene()
+CScene::~CScene()
 {
 }
