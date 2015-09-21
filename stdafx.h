@@ -17,3 +17,18 @@
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <DirectXColors.h>
+
+#include <string>
+#include <map>
+#include <vector>
+
+template<typename T>
+inline void SafeRelease(T& ptr)
+{
+	if (ptr != NULL)
+	{
+		ptr->Release();
+		ptr = NULL;
+	}
+}
+

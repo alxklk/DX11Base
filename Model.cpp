@@ -53,23 +53,6 @@ bool CModel::Create(ID3D11Device* device, VertexPosColor* vertices, int nVertice
 	{
 		return false;
 	}
-	ID3DBlob* psBlob = 0;
-	ID3DBlob* vsBlob = 0;
-	model.vertexShader = LoadVertexShader(appState, L"..\\data\\shaders\\RenderModelVS.hlsl", "main", "vs_4_0", &vsBlob);
-	model.pixelShader = LoadPixelShader(appState, L"..\\data\\shaders\\RenderModelPS.hlsl", "main", "ps_4_0");
-
-	// Create the input layout for the vertex shader.
-	D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosColor, pos), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosColor, col), D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-
-	hr = device->CreateInputLayout(vertexLayoutDesc, _countof(vertexLayoutDesc), vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &model.inputLayout);
-	if (FAILED(hr))
-	{
-		return false;
-	}
 
 	return true;
 }

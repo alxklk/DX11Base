@@ -1,7 +1,11 @@
 #pragma once
 
+#include "stdafx.h"
+
 #include "Model.h"
 #include "Scene.h"
+
+
 
 struct SShaderSetup
 {
@@ -9,7 +13,6 @@ struct SShaderSetup
 	ID3D11PixelShader* pixelShader;
 	ID3D11InputLayout* inputLayout;
 };
-
 
 class CRenderer
 {
@@ -27,10 +30,7 @@ class CRenderer
 
 	ID3D11Buffer* constantBuffers[3];
 
-	void RenderModel(CModel* model)
-	{
-
-	}
+	void RenderModel(CModel* model);
 
 	CQuad* fxquad;
 
@@ -42,11 +42,12 @@ public:
 		return d3dDevice;
 	}
 
-	std::map
-
-	void RenderScene(SScene* scene);
+	bool Init(HWND win);
+	void RenderScene(CScene* scene);
+	bool Done();
 
 	bool CreateDevice();
+	bool CreateRenderSetup(const char* vertexShaderFile, const char* pixelShaderFile, const D3D11_INPUT_ELEMENT_DESC* leyoutDesc);
 
 	CRenderer()
 		:d3dDevice(nullptr)
@@ -61,11 +62,12 @@ public:
 		constantBuffers[0] = nullptr;
 		constantBuffers[1] = nullptr;
 		constantBuffers[2] = nullptr;
-		Viewport.Width = (float)g_AppState.width;
-		Viewport.Height = (float)g_AppState.height;
+		Viewport.Width = 0;
+		Viewport.Height = 0;
 		Viewport.TopLeftX = 0.0f;
 		Viewport.TopLeftY = 0.0f;
 		Viewport.MinDepth = 0.0f;
 		Viewport.MaxDepth = 1.0f;
 	}
+	virtual ~CRenderer(){}
 };
