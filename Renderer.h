@@ -40,7 +40,7 @@ public:
 
 	ID3D11Device* GetDevice()
 	{
-		if (!d3dDevice)
+		if(!d3dDevice)
 			::DebugBreak();
 		return d3dDevice;
 	}
@@ -50,7 +50,7 @@ public:
 	bool Done();
 
 	bool CreateDevice();
-	bool CreateShaderSetup(const char* setupName, const char* vertexShaderFile, const char* pixelShaderFile, const D3D11_INPUT_ELEMENT_DESC* leyoutDesc);
+	bool CreateShaderSetup(const char* setupName, const _TCHAR* vertexShaderFile, const _TCHAR* pixelShaderFile, const D3D11_INPUT_ELEMENT_DESC* leyoutDesc, int nVL);
 	bool UseShaderSetup(const char* setupName);
 
 	CRenderer()
@@ -63,15 +63,15 @@ public:
 		, d3dDepthStencilState(nullptr)
 		, d3dRasterizerState(nullptr)
 	{
-		constantBuffers[0] = nullptr;
-		constantBuffers[1] = nullptr;
-		constantBuffers[2] = nullptr;
-		Viewport.Width = 0;
-		Viewport.Height = 0;
-		Viewport.TopLeftX = 0.0f;
-		Viewport.TopLeftY = 0.0f;
-		Viewport.MinDepth = 0.0f;
-		Viewport.MaxDepth = 1.0f;
+		constantBuffers[0]=nullptr;
+		constantBuffers[1]=nullptr;
+		constantBuffers[2]=nullptr;
+		Viewport.Width=0;
+		Viewport.Height=0;
+		Viewport.TopLeftX=0.0f;
+		Viewport.TopLeftY=0.0f;
+		Viewport.MinDepth=0.0f;
+		Viewport.MaxDepth=1.0f;
 	}
-	virtual ~CRenderer(){}
+	virtual ~CRenderer() {}
 };
