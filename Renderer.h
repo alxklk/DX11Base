@@ -6,7 +6,6 @@
 #include "Scene.h"
 
 
-
 struct SShaderSetup
 {
 	ID3D11VertexShader* vertexShader;
@@ -32,9 +31,13 @@ class CRenderer
 
 	void RenderModel(CModel* model);
 
-	CQuad* fxquad;
+	typedef std::map<std::string, SShaderSetup*> TShaderSterupMap;
+	TShaderSterupMap shaderSetupMap;
+	ID3D11VertexShader* LoadVertexShader(const _TCHAR* fileName, const char* entryPoint, const char* profile, ID3DBlob** shaderBlob);
+	ID3D11PixelShader* LoadPixelShader(const _TCHAR* fileName, const char* entryPoint, const char* profile);
 
 public:
+
 	ID3D11Device* GetDevice()
 	{
 		if (!d3dDevice)
@@ -47,10 +50,11 @@ public:
 	bool Done();
 
 	bool CreateDevice();
-	bool CreateRenderSetup(const char* vertexShaderFile, const char* pixelShaderFile, const D3D11_INPUT_ELEMENT_DESC* leyoutDesc);
+	bool CreateShaderSetup(const char* setupName, const char* vertexShaderFile, const char* pixelShaderFile, const D3D11_INPUT_ELEMENT_DESC* leyoutDesc);
+	bool UseShaderSetup(const char* setupName);
 
 	CRenderer()
-		:d3dDevice(nullptr)
+		: d3dDevice(nullptr)
 		, d3dDeviceContext(nullptr)
 		, d3dSwapChain(nullptr)
 		, d3dRenderTargetView(nullptr)

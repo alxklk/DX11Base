@@ -168,6 +168,19 @@ bool CRenderer::Init(HWND win)
 	return true;
 }
 
+bool CRenderer::UseShaderSetup(const char* shaderSetup)
+{
+	TShaderSterupMap::iterator foundShaderSetup=shaderSetupMap.find(shaderSetup);
+	if(foundShaderSetup==shaderSetupMap.end())
+		return false;
+
+	SShaderSetup* setup=foundShaderSetup->second;
+
+	d3dDeviceContext->IASetInputLayout(setup->inputLayout);
+	d3dDeviceContext->VSSetShader(setup->vertexShader, nullptr, 0);
+	d3dDeviceContext->VSSetConstantBuffers(0, 3, constantBuffers);
+	d3dDeviceContext->PSSetShader(setup->pixelShader, nullptr, 0);
+}
 
 void CRenderer::RenderScene(CScene* scene)
 {
@@ -184,21 +197,31 @@ void CRenderer::RenderScene(CScene* scene)
 	const UINT vertexStride = sizeof(VertexPosTexUV);
 	const UINT offset = 0;
 
-
-	d3dDeviceContext->IASetVertexBuffers(0, 1, fxquad->GetVertexBuffer(), &vertexStride, &offset);
-	d3dDeviceContext->IASetInputLayout(fxquad->inputLayout);
-	d3dDeviceContext->IASetIndexBuffer(fxquad->indexBuffer, DXGI_FORMAT_R16_UINT, 0);
-	d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	d3dDeviceContext->VSSetShader(fxquad.vertexShader, nullptr, 0);
-	d3dDeviceContext->VSSetConstantBuffers(0, 3, constantBuffers);
-
 	d3dDeviceContext->RSSetState(d3dRasterizerState);
-	d3dDeviceContext->RSSetViewports(1,&appState.Viewport);
+	d3dDeviceContext->RSSetViewports(1,&Viewport);
 
-	d3dDeviceContext->PSSetShader(fxquad.pixelShader, nullptr, 0);
+	size_t modelIndex=0;
+	while(true)
+	{
+		IModel* model=scene->GetModel(modelIndex);
+		if(nullptr==nullptr)
+			break;
 
-	d3dDeviceContext->DrawIndexed(6, 0, 0);
+		const char* shaderSetup=model->GetShaderSetup();
+		if(!UseShaderSetup(shaderSetup))
+			continue;
+
+		d3dDeviceContext->IASetIndexBuffer(model->GetIndexBuffer(), DXGI_FORMAT_R16_UINT, 0);
+		d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
+		ID3D11Buffer*const  vertexBuffer=model->GetVertexBuffer();
+		d3dDeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &vertexStride, &offset);
+
+
+		d3dDeviceContext->DrawIndexed(6, 0, 0);
+	}
+
 
 	d3dSwapChain->Present(0, 0);
 }
@@ -209,12 +232,14 @@ bool CRenderer::Done()
 	return true;
 }
 
-bool CRenderer::CreateRenderSetup()
+
+bool CRenderer::CreateShaderSetup(const char* setupName, const char* vertexShaderFile, const char* pixelShaderFile, const D3D11_INPUT_ELEMENT_DESC* leyoutDesc)
 {
 	ID3DBlob* psBlob = 0;
 	ID3DBlob* vsBlob = 0;
-	model.vertexShader = LoadVertexShader(appState, L"..\\data\\shaders\\RenderModelVS.hlsl", "main", "vs_4_0", &vsBlob);
-	model.pixelShader = LoadPixelShader(appState, L"..\\data\\shaders\\RenderModelPS.hlsl", "main", "ps_4_0");
+	
+	ID3D11VertexShader* vertexShader = LoadVertexShader(L"..\\data\\shaders\\RenderModelVS.hlsl", "main", "vs_4_0", &vsBlob);
+	ID3D11PixelShader* pixelShader = LoadPixelShader(L"..\\data\\shaders\\RenderModelPS.hlsl", "main", "ps_4_0");
 
 	// Create the input layout for the vertex shader.
 	D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[] =
@@ -223,14 +248,15 @@ bool CRenderer::CreateRenderSetup()
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosColor, col), D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
-	hr = device->CreateInputLayout(vertexLayoutDesc, _countof(vertexLayoutDesc), vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &model.inputLayout);
+	ID3D11InputLayout* inputLayout;
+	HRESULT hr;
+	hr = d3dDevice->CreateInputLayout(vertexLayoutDesc, _countof(vertexLayoutDesc), vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &inputLayout);
 	if (FAILED(hr))
 	{
 		return false;
 	}
+	return true;
 }
-
-
 
 ID3DBlob* LoadShader(const _TCHAR* fileName, const char* entryPoint, const char* profile)
 {
@@ -256,25 +282,24 @@ ID3DBlob* LoadShader(const _TCHAR* fileName, const char* entryPoint, const char*
 	return pShaderBlob;
 }
 
-
-ID3D11VertexShader* LoadVertexShader(SAppState& appState, const _TCHAR* fileName, const char* entryPoint, const char* profile, ID3DBlob** shaderBlob)
+ID3D11VertexShader* CRenderer::LoadVertexShader(const _TCHAR* fileName, const char* entryPoint, const char* profile, ID3DBlob** shaderBlob)
 {
 	ID3D11VertexShader* newShader = nullptr;
 
 	if (*shaderBlob = LoadShader(fileName, entryPoint, profile))
 	{
-		g_AppState.renderer->GetDevice()->CreateVertexShader((*shaderBlob)->GetBufferPointer(), (*shaderBlob)->GetBufferSize(), nullptr, &newShader);
+		d3dDevice->CreateVertexShader((*shaderBlob)->GetBufferPointer(), (*shaderBlob)->GetBufferSize(), nullptr, &newShader);
 	}
 	return newShader;
 }
 
-ID3D11PixelShader* LoadPixelShader(SAppState& appState, const _TCHAR* fileName, const char* entryPoint, const char* profile)
+ID3D11PixelShader* CRenderer::LoadPixelShader(const _TCHAR* fileName, const char* entryPoint, const char* profile)
 {
 	ID3D11PixelShader* newShader = nullptr;
 
 	if (ID3DBlob* shaderBlob = LoadShader(fileName, entryPoint, profile))
 	{
-		g_AppState.renderer->GetDevice()->CreatePixelShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, &newShader);
+		d3dDevice->CreatePixelShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, &newShader);
 	}
 	return newShader;
 }
