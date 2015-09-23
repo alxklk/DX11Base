@@ -13,7 +13,7 @@ CScene::~CScene()
 
 IModel* CScene::GetModel(size_t i)
 {
-	if(i<models.size())
+	if(i>=models.size())
 		return nullptr;
 	return models[i];
 }

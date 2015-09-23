@@ -56,7 +56,7 @@ bool CRenderer::Init(HWND win)
 		&featureLevel, &d3dDeviceContext);
 	if(FAILED(hr))
 	{
-		printf_s("D3D Device failed to init\n", featureLevel);
+		printf_s("D3D Device failed to init\n");
 		return false;
 	}
 
