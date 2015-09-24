@@ -21,14 +21,17 @@ class IModel
 public:
 	virtual ID3D11Buffer *const GetVertexBuffer()const=0;
 	virtual ID3D11Buffer* GetIndexBuffer()const=0;
-	virtual const char* GetShaderSetup()const=0;
 	virtual int GetVertexStride()const=0;
+	virtual const char* GetShaderSetup()const=0;
+	virtual ID3D11ShaderResourceView* GetTextureView()const=0;
+	virtual ID3D11RenderTargetView* GetRTView()const=0;
 };
 
 class CModel : public IModel
 {
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* indexBuffer;
+
 public:
 	bool Create(ID3D11Device* device, VertexPosColor* vertices, int nVertices, WORD* indices, int nIndices);
 	CModel::CModel()
@@ -40,6 +43,8 @@ public:
 	virtual ID3D11Buffer* GetIndexBuffer()const { return indexBuffer; }
 	virtual int GetVertexStride()const { return sizeof(VertexPosColor); }
 	virtual const char* GetShaderSetup()const { return "Model"; };
+	virtual ID3D11ShaderResourceView* GetTextureView()const {return nullptr;};
+	virtual ID3D11RenderTargetView* GetRTView()const {return nullptr;};
 	virtual ~CModel()
 	{
 	};
@@ -57,6 +62,8 @@ public:
 	virtual ID3D11Buffer* GetIndexBuffer()const { return indexBuffer; }
 	virtual int GetVertexStride()const { return sizeof(VertexPosTexUV); }
 	virtual const char* GetShaderSetup()const { return shaderSetup; };
+	virtual ID3D11ShaderResourceView* GetTextureView()const {return nullptr;};
+	virtual ID3D11RenderTargetView* GetRTView()const {return nullptr;};
 	virtual ~CQuad()
 	{
 	}

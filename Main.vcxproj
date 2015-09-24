@@ -83,6 +83,7 @@
   <ItemGroup>
     <ClInclude Include="Model.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RTTexture.h" />
     <ClInclude Include="SCene.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="WinUI.h" />
@@ -91,6 +92,7 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="RTTexture.cpp" />
     <ClCompile Include="SCene.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -114,8 +114,6 @@ bool CRenderer::Init(HWND win)
 	depthStencilStateDesc.StencilEnable=FALSE;
 
 	hr=d3dDevice->CreateDepthStencilState(&depthStencilStateDesc, &d3dDepthStencilState);
-
-	d3dDeviceContext->OMSetRenderTargets(1, &d3dRenderTargetView, NULL);
 	d3dDeviceContext->OMSetDepthStencilState(d3dDepthStencilState, 1);
 
 	D3D11_RASTERIZER_DESC rasterizerDesc;
@@ -215,6 +213,7 @@ void CRenderer::RenderScene(CScene* scene)
 
 	d3dDeviceContext->RSSetState(d3dRasterizerState);
 	d3dDeviceContext->RSSetViewports(1, &Viewport);
+	d3dDeviceContext->OMSetRenderTargets(1, &d3dRenderTargetView, NULL);
 
 	size_t modelIndex=0;
 	while(true)
@@ -224,22 +223,37 @@ void CRenderer::RenderScene(CScene* scene)
 			break;
 
 		const char* shaderSetup=model->GetShaderSetup();
-		if(!UseShaderSetup(shaderSetup))
-			continue;
+		if(shaderSetup)
+			UseShaderSetup(shaderSetup);
 
-		d3dDeviceContext->IASetIndexBuffer(model->GetIndexBuffer(), DXGI_FORMAT_R16_UINT, 0);
-		d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		if(model->GetIndexBuffer()&&model->GetVertexBuffer())
+		{
+			d3dDeviceContext->IASetIndexBuffer(model->GetIndexBuffer(), DXGI_FORMAT_R16_UINT, 0);
+			d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			ID3D11Buffer*const  vertexBuffer=model->GetVertexBuffer();
+			const UINT offset=0;
+			const UINT vertexStride=model->GetVertexStride();
+			d3dDeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &vertexStride, &offset);
+
+			ID3D11ShaderResourceView* textureView=model->GetTextureView();
+			if(textureView)
+				d3dDeviceContext->PSSetShaderResources(0,1,&textureView);
+
+			ID3D11RenderTargetView* RTView=model->GetRTView();
+			if(RTView)
+				d3dDeviceContext->OMGetRenderTargets(1,&RTView,0);
 
 
-		ID3D11Buffer*const  vertexBuffer=model->GetVertexBuffer();
-		const UINT offset=0;
-		const UINT vertexStride=model->GetVertexStride();
-		d3dDeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &vertexStride, &offset);
+			d3dDeviceContext->DrawIndexed(6, 0, 0);
+		}
 
-		d3dDeviceContext->DrawIndexed(6, 0, 0);
+
+
 		modelIndex++;
 	}
 
+	d3dDeviceContext->OMSetRenderTargets(1, &d3dRenderTargetView, NULL);
 
 	d3dSwapChain->Present(0, 0);
 }
