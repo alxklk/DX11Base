@@ -3,6 +3,7 @@
 #pragma comment(lib, "d3dcompiler.lib")
 
 #include "Renderer.h"
+#include "RTTexture.h"
 #include "WinUI.h"
 
 struct SAppState
@@ -116,6 +117,32 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[]=
 		{
+			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
+		};
+
+		renderer->CreateShaderSetup("quad_p1",
+			L"..\\data\\shaders\\ScreenQuadPass1VS.hlsl",
+			L"..\\data\\shaders\\ScreenQuadPass1PS.hlsl",
+			vertexLayoutDesc, 2);
+	}
+
+	{
+		D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[]=
+		{
+			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
+		};
+
+		renderer->CreateShaderSetup("quad_p2",
+			L"..\\data\\shaders\\ScreenQuadPass2VS.hlsl",
+			L"..\\data\\shaders\\ScreenQuadPass2PS.hlsl",
+			vertexLayoutDesc, 2);
+	}
+
+	{
+		D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[]=
+		{
 			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosColor, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
 			{"COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosColor, col), D3D11_INPUT_PER_VERTEX_DATA, 0}
 		};
@@ -128,9 +155,32 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	CScene* scene=new CScene;
 
+	CRTTexture* texP1=new CRTTexture;
+	texP1->Create(renderer->GetDevice(),gAppState.width, gAppState.height,DXGI_FORMAT_R8G8B8A8_UNORM);
+	CRTTexture* texP2=new CRTTexture;
+	texP2->Create(renderer->GetDevice(),gAppState.width, gAppState.height,DXGI_FORMAT_R8G8B8A8_UNORM);
+
+
+	CQuad* quad_models=new CQuad;
+	quad_models->Create(renderer->GetDevice());
+	quad_models->SetShaderSetup(0);
+	quad_models->SetTextureView(0);
+	quad_models->SetRTView(texP1->GetRTView());
 	CQuad* quad=new CQuad;
 	quad->Create(renderer->GetDevice());
 	quad->SetShaderSetup("quad");
+	quad->SetTextureView(0);
+	quad->SetRTView(texP1->GetRTView());
+	CQuad* quadP1=new CQuad;
+	quad->Create(renderer->GetDevice());
+	quad->SetShaderSetup("quad");
+	quad->SetTextureView(texP1->GetShaderResourceView());
+	quad->SetRTView();
+	CQuad* quadP2=new CQuad;
+	quad->Create(renderer->GetDevice());
+	quad->SetShaderSetup("quad");
+	quad->SetTextureView();
+	quad->SetRTView(renderer->GetRTView());
 	scene->AddModel(quad);
 
 

@@ -53,6 +53,8 @@ public:
 	bool CreateShaderSetup(const char* setupName, const _TCHAR* vertexShaderFile, const _TCHAR* pixelShaderFile, const D3D11_INPUT_ELEMENT_DESC* leyoutDesc, int nVL);
 	bool UseShaderSetup(const char* setupName);
 
+	ID3D11RenderTargetView* GetRTView(){return d3dRenderTargetView;}
+
 	CRenderer()
 		: d3dDevice(nullptr)
 		, d3dDeviceContext(nullptr)
