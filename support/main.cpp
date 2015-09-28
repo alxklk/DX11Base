@@ -1,13 +1,65 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <vector>
+#include <map>
 
+using namespace std;
 
 typedef struct
 {
 	float x;
 	float y;
 	float z;
-}vertex, normal;
+	void Set(const float& ix, const float& iy, const float& iz)
+	{
+		x=ix;
+		y=iy;
+		z=iz;
+	}
+}float3;
+
+typedef struct
+{
+	float3 position;
+	float3 normal;
+}vertex_PN;
+
+typedef struct s_index_PN
+{
+	int pindex;
+	int nindex;
+	s_index_PN(int pidx, int nidx): pindex(pidx), nindex(nidx){}
+}index_PN;
+
+bool operator<(const s_index_PN& left, const s_index_PN& right)
+{
+	return ((left.pindex+left.nindex*65536)<(right.pindex+right.nindex*65536));
+}
+
+vector<float3>v;
+vector<float3>n;
+vector<vertex_PN>vbuf;
+vector<unsigned int>ibuf;
+typedef map<index_PN, int>Tvmap;
+Tvmap vmap;
+
+void AddIndex(int vX, int nX)
+{
+	Tvmap::iterator found=vmap.find(index_PN(vX, nX));
+	if(found==vmap.end())
+	{
+		vmap[index_PN(vX, nX)]=vbuf.size();
+		ibuf.push_back(vbuf.size());
+		vbuf.resize(vbuf.size()+1);
+		vbuf.back().normal  =n[nX];
+		vbuf.back().position=v[vX];
+	}
+	else
+	{
+		ibuf.push_back(vbuf.size()-1);
+	}
+}
+
 
 int main(int argc, char **argv)
 {
@@ -15,13 +67,12 @@ int main(int argc, char **argv)
 	char wd[256];
 	getcwd(wd, 256);
 	printf("%s\n",wd);
-	char* fname="wt_teapot.obj";
+	const char* fname="wt_teapot.obj";
 //	fname=argv[1];
 	FILE* f=fopen(fname,"rb");
 	if(f)
 	{
-		vertex* v;
-		normal* n;
+	
 		
 		char string[256];
 		while(true)
@@ -29,14 +80,17 @@ int main(int argc, char **argv)
 			char* res=fgets(string,255,f);
 			if(!res)
 				break;
-//			puts(string);
 			if((string[0]=='v')&&(string[1]==' '))
 			{
 				float x;
 				float y;
 				float z;
 				int nf=sscanf(string+2, "%f %f %f", &x, &y, &z);
-				printf("Vertex %i %f %f %f\n", nf, x, y, z);
+				if(nf==3)
+				{
+					v.resize(v.size()+1);
+					v.back().Set(x,y,z);
+				}
 			}
 			if((string[0]=='v')&&(string[1]=='n'))
 			{
@@ -44,7 +98,11 @@ int main(int argc, char **argv)
 				float y;
 				float z;
 				int nf=sscanf(string+2, "%f %f %f", &x, &y, &z);
-				printf("Normal %i %f %f %f\n", nf, x, y, z);
+				if(nf==3)
+				{
+					n.resize(n.size()+1);
+					n.back().Set(x,y,z);
+				}
 			}
 			if((string[0]=='f')&&(string[1]==' '))
 			{
@@ -55,9 +113,15 @@ int main(int argc, char **argv)
 				int n1;
 				int n2;
 				int nf=sscanf(string+2, "%i//%i %i//%i %i//%i", &v0, &n0, &v1, &n1, &v2, &n2);
-				printf("t %i//%i %i//%i %i//%i\n", v0, n0, v1, n1, v2, n2);
+				if(nf==6)
+				{
+					AddIndex(v0,n0);
+					AddIndex(v1,n1);
+					AddIndex(v2,n2);
+				}
 			}
 		}
+		printf("Positions %i Normals %i Vertices %i Faces %i\n", v.size(), n.size(), vbuf.size(), ibuf.size());
 		fclose(f);
 	}
 	return 0;
