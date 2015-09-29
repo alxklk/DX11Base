@@ -5,7 +5,7 @@
 
 using namespace std;
 
-typedef struct
+typedef struct s_float3
 {
 	float x;
 	float y;
@@ -18,7 +18,7 @@ typedef struct
 	}
 }float3;
 
-typedef struct
+typedef struct s_vertex_PN
 {
 	float3 position;
 	float3 normal;
@@ -33,6 +33,7 @@ typedef struct s_index_PN
 
 bool operator<(const s_index_PN& left, const s_index_PN& right)
 {
+	// Quick and dirty: assume that object has less than 65536 verts.
 	return ((left.pindex+left.nindex*65536)<(right.pindex+right.nindex*65536));
 }
 
@@ -123,6 +124,14 @@ int main(int argc, char **argv)
 		}
 		printf("Positions %i Normals %i Vertices %i Faces %i\n", v.size(), n.size(), vbuf.size(), ibuf.size());
 		fclose(f);
+		
+		{
+			FILE* f=fopen("model.h", "wb");
+			fprintf("")
+			
+			
+			fclose(f);
+		}
 	}
 	return 0;
 }
