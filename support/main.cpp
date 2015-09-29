@@ -49,15 +49,17 @@ void AddIndex(int vX, int nX)
 	Tvmap::iterator found=vmap.find(index_PN(vX, nX));
 	if(found==vmap.end())
 	{
-		vmap[index_PN(vX, nX)]=vbuf.size();
-		ibuf.push_back(vbuf.size());
+		int index=vbuf.size();
+		vmap[index_PN(vX, nX)]=index;
+		ibuf.push_back(index);
 		vbuf.resize(vbuf.size()+1);
 		vbuf.back().normal  =n[nX];
 		vbuf.back().position=v[vX];
 	}
 	else
 	{
-		ibuf.push_back(vbuf.size()-1);
+		int index=found->second;
+		ibuf.push_back(index);
 	}
 }
 
@@ -73,8 +75,6 @@ int main(int argc, char **argv)
 	FILE* f=fopen(fname,"rb");
 	if(f)
 	{
-	
-		
 		char string[256];
 		while(true)
 		{
@@ -116,20 +116,35 @@ int main(int argc, char **argv)
 				int nf=sscanf(string+2, "%i//%i %i//%i %i//%i", &v0, &n0, &v1, &n1, &v2, &n2);
 				if(nf==6)
 				{
-					AddIndex(v0,n0);
-					AddIndex(v1,n1);
-					AddIndex(v2,n2);
+					AddIndex(v0-1,n0-1);
+					AddIndex(v1-1,n1-1);
+					AddIndex(v2-1,n2-1);
 				}
 			}
 		}
-		printf("Positions %i Normals %i Vertices %i Faces %i\n", v.size(), n.size(), vbuf.size(), ibuf.size());
+		printf("Positions %i Normals %i Vertices %i Faces %i\n", (int)v.size(), (int)n.size(), (int)vbuf.size(), (int)ibuf.size());
 		fclose(f);
 		
 		{
 			FILE* f=fopen("model.h", "wb");
-			fprintf("")
-			
-			
+			fprintf(f, "float vb[]={\n");
+			for(unsigned int i=0;i<vbuf.size();i++)
+			{
+				fprintf(f, "\t% 8.6f, % 8.6f, % 8.6f, % 8.6f, % 8.6f, % 8.6f, % 8.6f, % 8.6f,\n",
+					vbuf[i].position.x,vbuf[i].position.y,vbuf[i].position.z,
+					vbuf[i].normal.x  ,vbuf[i].normal.y  ,vbuf[i].normal.z,
+					0.0,0.0
+				);
+			}
+			fprintf(f, "};\n");
+			fprintf(f, "int ib[]={\n\t");
+			for(unsigned int i=0;i<ibuf.size();i++)
+			{
+				if(i&&(i%3==0))
+					fprintf(f, "\n\t");
+				fprintf(f, "% 4i,", ibuf[i]);
+			}
+			fprintf(f, "};\n");
 			fclose(f);
 		}
 	}
