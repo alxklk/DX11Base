@@ -245,7 +245,7 @@ void CRenderer::RenderScene(CScene* scene)
 				d3dDeviceContext->OMGetRenderTargets(1,&RTView,0);
 
 
-			d3dDeviceContext->DrawIndexed(6, 0, 0);
+			d3dDeviceContext->DrawIndexed(model->GetIndexCount(), 0, 0);
 		}
 
 

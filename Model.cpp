@@ -2,13 +2,13 @@
 #include "Model.h"
 
 
-bool CModel::Create(ID3D11Device* device, VertexPosColor* vertices, int nVertices, WORD* indices, int nIndices)
+bool CModel::Create(ID3D11Device* device, VertexPosNormTexUV* vertices, int nVertices, WORD* indices, int nIndices)
 {
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	memset(&vertexBufferDesc, 0, sizeof(D3D11_BUFFER_DESC));
 
 	vertexBufferDesc.BindFlags=D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.ByteWidth=sizeof(VertexPosColor) * nVertices;
+	vertexBufferDesc.ByteWidth=sizeof(VertexPosNormTexUV) * nVertices;
 	vertexBufferDesc.CPUAccessFlags=0;
 	vertexBufferDesc.Usage=D3D11_USAGE_DEFAULT;
 
@@ -33,6 +33,9 @@ bool CModel::Create(ID3D11Device* device, VertexPosColor* vertices, int nVertice
 	indexBufferDesc.Usage=D3D11_USAGE_DEFAULT;
 	indexBufferDesc.StructureByteStride=sizeof(WORD);
 	resourceData.pSysMem=indices;
+
+	indexCount=nIndices;
+
 
 	hr=device->CreateBuffer(&indexBufferDesc, &resourceData, &indexBuffer);
 	if(FAILED(hr))
@@ -63,10 +66,10 @@ bool CQuad::Create(ID3D11Device* device)
 	memset(&vertexBufferDesc, 0, sizeof(D3D11_BUFFER_DESC));
 
 	vertexBufferDesc.BindFlags=D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.ByteWidth=sizeof(VertexPosColor)*4;
+	vertexBufferDesc.ByteWidth=sizeof(VertexPosTexUV)*4;
 	vertexBufferDesc.CPUAccessFlags=0;
 	vertexBufferDesc.Usage=D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.StructureByteStride=sizeof(VertexPosColor);
+	vertexBufferDesc.StructureByteStride=sizeof(VertexPosTexUV);
 
 	D3D11_SUBRESOURCE_DATA resourceData;
 	memset(&resourceData, 0, sizeof(D3D11_SUBRESOURCE_DATA));

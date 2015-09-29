@@ -50,28 +50,9 @@ LRESULT CALLBACK wp(HWND hwnd, unsigned int imsg, WPARAM wpar, LPARAM lpar)
 	return DefWindowProc(hwnd, imsg, wpar, lpar);
 }
 
-VertexPosColor BoxVertices[8]=
-{
-	{XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f)},
-	{XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)},
-	{XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, 0.0f)},
-	{XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f)},
-	{XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f)},
-	{XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 1.0f)},
-	{XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f)},
-	{XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 1.0f)}
-};
-
-WORD BoxIndicies[36]=
-{
-	0, 1, 2, 0, 2, 3,
-	4, 6, 5, 4, 7, 6,
-	4, 5, 1, 4, 1, 0,
-	3, 2, 6, 3, 6, 7,
-	1, 5, 6, 1, 6, 2,
-	4, 0, 3, 4, 3, 7
-};
-
+namespace teapot{
+#include "teapot.h"
+}
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -131,7 +112,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[]=
 		{
 			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
-			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
+			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT   , 0, offsetof(VertexPosTexUV, uv) , D3D11_INPUT_PER_VERTEX_DATA, 0}
 		};
 
 		renderer->CreateShaderSetup("quad_p2",
@@ -143,14 +124,15 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[]=
 		{
-			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosColor, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
-			{"COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosColor, col), D3D11_INPUT_PER_VERTEX_DATA, 0}
+			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosNormTexUV, pos)   , D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{"NORMAL"  , 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosNormTexUV, normal), D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT   , 0, offsetof(VertexPosNormTexUV, uv)    , D3D11_INPUT_PER_VERTEX_DATA, 0}
 		};
 
-		renderer->CreateShaderSetup("Model",
+		renderer->CreateShaderSetup("model",
 			L"..\\data\\shaders\\RenderModelVS.hlsl",
 			L"..\\data\\shaders\\RenderModelPS.hlsl",
-			vertexLayoutDesc, 2);
+			vertexLayoutDesc, 3);
 	}
 
 	CScene* scene=new CScene;
@@ -161,28 +143,35 @@ int _tmain(int argc, _TCHAR* argv[])
 	texP2->Create(renderer->GetDevice(),gAppState.width, gAppState.height,DXGI_FORMAT_R8G8B8A8_UNORM);
 
 
-	CQuad* quad_models=new CQuad;
-	quad_models->Create(renderer->GetDevice());
-	quad_models->SetShaderSetup(0);
-	quad_models->SetTextureView(0);
-	quad_models->SetRTView(texP1->GetRTView());
 	CQuad* quad=new CQuad;
 	quad->Create(renderer->GetDevice());
 	quad->SetShaderSetup("quad");
 	quad->SetTextureView(0);
 	quad->SetRTView(texP1->GetRTView());
-	CQuad* quadP1=new CQuad;
-	quad->Create(renderer->GetDevice());
-	quad->SetShaderSetup("quad");
-	quad->SetTextureView(texP1->GetShaderResourceView());
-	quad->SetRTView();
-	CQuad* quadP2=new CQuad;
-	quad->Create(renderer->GetDevice());
-	quad->SetShaderSetup("quad");
-	quad->SetTextureView();
-	quad->SetRTView(renderer->GetRTView());
 	scene->AddModel(quad);
+/*
+	CQuad* quadP1=new CQuad;
+	quadP1->Create(renderer->GetDevice());
+	quadP1->SetShaderSetup("quad");
+	quadP1->SetTextureView(texP1->GetShaderResourceView());
+	quadP1->SetRTView(texP2->GetRTView());
+	scene->AddModel(quadP1);
 
+	CQuad* quadP2=new CQuad;
+	quadP2->Create(renderer->GetDevice());
+	quadP2->SetShaderSetup("quad");
+	quadP2->SetTextureView(texP2->GetShaderResourceView());
+	quadP2->SetRTView(renderer->GetRTView());
+	scene->AddModel(quadP2);
+*/
+	CModel* model=new CModel;
+	model->Create(renderer->GetDevice(), 
+		(VertexPosNormTexUV*)teapot::vb, sizeof(teapot::vb)/sizeof(VertexPosNormTexUV),
+		teapot::ib, sizeof(teapot::ib)/sizeof(unsigned short)
+		);
+	model->SetTextureView(texP2->GetShaderResourceView());
+	model->SetRTView(renderer->GetRTView());
+	scene->AddModel(model);
 
 	while(1)
 	{
