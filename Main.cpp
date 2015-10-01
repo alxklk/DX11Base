@@ -141,8 +141,6 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		if(gAppState.quitRequested)
 			break;
-
-
 		if(gAppState.reloadShaders)
 		{
 			gAppState.reloadShaders=false;
@@ -152,7 +150,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
 					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
 				};
-				renderer->CreateShaderSetup("quad",L"..\\data\\shaders\\ScreenQuadVS.hlsl",L"..\\data\\shaders\\ScreenQuadPS.hlsl",vertexLayoutDesc, 2);
+				renderer->CreateShaderSetup("quad",L"..\\data\\shaders\\ScreenQuadVS.hlsl",L"..\\data\\shaders\\ScreenQuadPS.hlsl",vertexLayoutDesc, 2, sizeof(float)*4);
 			}
 
 			{
@@ -184,62 +182,21 @@ int _tmain(int argc, _TCHAR* argv[])
 			}
 		}
 
+		renderer->UseShaderSetup("quad");
+		float cb[4];
+		cb[0]=gAppState.lastMouseEvent.x/100.0;
+		cb[1]=gAppState.lastMouseEvent.y/100.0;
+
+		renderer->UpdateShaderConstants((void*)&cb);
+
+
 		renderer->RenderScene(scene);
 
 	}
 
 	renderer->Done();
 
-
 	::OutputDebugString(L"Quiting...\n");
 
 	return 0;
 }
-
-
-
-
-/*
-
-ID3DBlob* vsBlob = 0;
-model.vertexShader = LoadVertexShader(appState, L"..\\data\\shaders\\ScreenQuadVS.hlsl", "main", "vs_5_0", &vsBlob);
-model.pixelShader = LoadPixelShader(appState, L"..\\data\\shaders\\ScreenQuadPS.hlsl", "main", "ps_5_0");
-
-int posoffset = offsetof(VertexPosTexUV, pos);
-int uvoffset = offsetof(VertexPosTexUV, uv);
-
-D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[] =
-{
-{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, posoffset, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, uvoffset, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-};
-
-hr = device->CreateInputLayout(vertexLayoutDesc, _countof(vertexLayoutDesc), vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &model.inputLayout);
-if (FAILED(hr))
-{
-printf("Fail\n");
-return false;
-}
-
-ID3D11VertexShader* vertexShader = LoadVertexShader(L"..\\data\\shaders\\RenderModelVS.hlsl", "main", "vs_4_0", &vsBlob);
-ID3D11PixelShader* pixelShader =   LoadPixelShader (L"..\\data\\shaders\\RenderModelPS.hlsl", "main", "ps_4_0");
-
-// Create the input layout for the vertex shader.
-D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[] =
-{
-{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosColor, pos), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosColor, col), D3D11_INPUT_PER_VERTEX_DATA, 0 }
-};
-
-ID3D11InputLayout* inputLayout;
-HRESULT hr;
-hr = d3dDevice->CreateInputLayout(vertexLayoutDesc, _countof(vertexLayoutDesc), vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &inputLayout);
-if (FAILED(hr))
-{
-return false;
-}
-
-
-*/
-
-

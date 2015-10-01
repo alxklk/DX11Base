@@ -1,4 +1,4 @@
-cbuffer PerApplication : register(b0)
+/*cbuffer PerApplication : register(b0)
 {
 	matrix projectionMatrix;
 }
@@ -12,7 +12,7 @@ cbuffer PerObject : register(b2)
 {
 	matrix worldMatrix;
 }
-
+*/
 struct AppData
 {
 	float3 position : POSITION;
@@ -33,8 +33,8 @@ VertexShaderOutput main(AppData IN)
 	OUT.color=float4(IN.position.yz, 0.0, 1.0f);
 	return OUT;
 
-	matrix mvp = mul(projectionMatrix, mul(viewMatrix, worldMatrix));
-	OUT.position = mul(mvp, float4(IN.position, 1.0f));
+//	matrix mvp = mul(projectionMatrix, mul(viewMatrix, worldMatrix));
+//	OUT.position = mul(mvp, float4(IN.position, 1.0f));
 	OUT.color = float4(IN.uv, 0.0, 1.0f);
 
 	return OUT;

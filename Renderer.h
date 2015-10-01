@@ -11,6 +11,8 @@ struct SShaderSetup
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
 	ID3D11InputLayout* inputLayout;
+	ID3D11Buffer* constantBuffer;
+	int constantsSize;
 };
 
 class CRenderer
@@ -36,6 +38,8 @@ class CRenderer
 	ID3D11VertexShader* LoadVertexShader(const _TCHAR* fileName, const char* entryPoint, const char* profile, ID3DBlob** shaderBlob);
 	ID3D11PixelShader* LoadPixelShader(const _TCHAR* fileName, const char* entryPoint, const char* profile);
 
+	SShaderSetup* currentShaderSetup;
+
 public:
 
 	ID3D11Device* GetDevice()
@@ -50,8 +54,10 @@ public:
 	bool Done();
 
 	bool CreateDevice();
-	bool CreateShaderSetup(const char* setupName, const _TCHAR* vertexShaderFile, const _TCHAR* pixelShaderFile, const D3D11_INPUT_ELEMENT_DESC* leyoutDesc, int nVL);
+	bool CreateShaderSetup(const char* setupName, const _TCHAR* vertexShaderFile, const _TCHAR* pixelShaderFile,
+		const D3D11_INPUT_ELEMENT_DESC* layoutDesc, int nVL, int constantsSize=0);
 	bool UseShaderSetup(const char* setupName);
+	bool UpdateShaderConstants(void* constantBuffer=0);
 
 	ID3D11RenderTargetView* GetRTView(){return d3dRenderTargetView;}
 

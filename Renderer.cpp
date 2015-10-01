@@ -14,8 +14,8 @@ bool CRenderer::Init(HWND win)
 	int width=clientRect.right-clientRect.left;
 	int height=clientRect.bottom-clientRect.top;
 
-	Viewport.Width=width;
-	Viewport.Height=height;
+	Viewport.Width=(float)width;
+	Viewport.Height=(float)height;
 
 	swapChainDesc.BufferCount=1;
 	swapChainDesc.BufferDesc.Width=width;
@@ -33,7 +33,7 @@ bool CRenderer::Init(HWND win)
 
 	UINT createDeviceFlags=0;
 
-	//		createDeviceFlags = D3D11_CREATE_DEVICE_DEBUG;
+	createDeviceFlags = D3D11_CREATE_DEVICE_DEBUG;
 
 	D3D_FEATURE_LEVEL featureLevels[]=
 	{
@@ -136,67 +136,52 @@ bool CRenderer::Init(HWND win)
 		printf("Fail\n");
 		return false;
 	}
-
-
-	D3D11_BUFFER_DESC constantBufferDesc;
-	memset(&constantBufferDesc, 0, sizeof(D3D11_BUFFER_DESC));
-
-	constantBufferDesc.BindFlags=D3D11_BIND_CONSTANT_BUFFER;
-	constantBufferDesc.ByteWidth=sizeof(XMMATRIX);
-	constantBufferDesc.CPUAccessFlags=0;
-	constantBufferDesc.Usage=D3D11_USAGE_DEFAULT;
-
-	hr=d3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffers[0]);
-	if(FAILED(hr))
-	{
-		printf("Fail\n");
-		return false;
-	}
-	hr=d3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffers[1]);
-	if(FAILED(hr))
-	{
-		printf("Fail\n");
-		return false;
-	}
-	hr=d3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffers[2]);
-	if(FAILED(hr))
-	{
-		printf("Fail\n");
-		return false;
-	}
-	/*
-	D3D11_BUFFER_DESC constantBufferDesc;
-	memset(&constantBufferDesc, 0, sizeof(D3D11_BUFFER_DESC));
-
-	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	constantBufferDesc.ByteWidth = sizeof(XMMATRIX);
-	constantBufferDesc.CPUAccessFlags = 0;
-	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-
-	hr = device->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(hr))
-	{
-	return false;
-	}
-	*/
-
 	return true;
 }
+
+
 
 bool CRenderer::UseShaderSetup(const char* shaderSetup)
 {
 	TShaderSterupMap::iterator foundShaderSetup=shaderSetupMap.find(shaderSetup);
 	if(foundShaderSetup==shaderSetupMap.end())
+	{
+		currentShaderSetup=0;
 		return false;
+	}
+	currentShaderSetup=foundShaderSetup->second;
 
-	SShaderSetup* setup=foundShaderSetup->second;
-
-	d3dDeviceContext->IASetInputLayout(setup->inputLayout);
-	d3dDeviceContext->VSSetShader(setup->vertexShader, nullptr, 0);
-	d3dDeviceContext->VSSetConstantBuffers(0, 3, constantBuffers);
-	d3dDeviceContext->PSSetShader(setup->pixelShader, nullptr, 0);
+	d3dDeviceContext->IASetInputLayout(currentShaderSetup->inputLayout);
+	d3dDeviceContext->VSSetShader(currentShaderSetup->vertexShader, nullptr, 0);
+	d3dDeviceContext->PSSetShader(currentShaderSetup->pixelShader, nullptr, 0);
+	if(currentShaderSetup->constantBuffer)
+		d3dDeviceContext->PSSetConstantBuffers(0,1,&currentShaderSetup->constantBuffer);
+//	d3dDeviceContext->VSSetConstantBuffers(2,1,&currentShaderSetup->constantBuffer);
 	return true;
 }
+
+bool CRenderer::UpdateShaderConstants(void* constantBuffer)
+{
+	ID3D11Buffer* cb=0;
+	if(currentShaderSetup&&currentShaderSetup->constantBuffer)
+	{
+		D3D11_MAPPED_SUBRESOURCE mr;
+		HRESULT hr=d3dDeviceContext->Map(currentShaderSetup->constantBuffer,0,D3D11_MAP_WRITE_DISCARD,0,&mr);
+		if(FAILED(hr))
+			return false;
+		for(int i=0;i<currentShaderSetup->constantsSize;i++)
+			((char*)mr.pData)[i]=((char*)constantBuffer)[i];
+		d3dDeviceContext->Unmap(currentShaderSetup->constantBuffer,0);
+
+
+//		d3dDeviceContext->UpdateSubresource(currentShaderSetup->constantBuffer, 0, 0, &constantBuffer, 0, 0);
+//		d3dDeviceContext->PSSetConstantBuffers(0,1,&currentShaderSetup->constantBuffer);
+
+		return true;
+	}
+	return false;
+}
+
 
 void CRenderer::RenderScene(CScene* scene)
 {
@@ -266,7 +251,7 @@ bool CRenderer::Done()
 
 
 bool CRenderer::CreateShaderSetup(const char* setupName, const _TCHAR* vertexShaderFile, const _TCHAR* pixelShaderFile,
-	const D3D11_INPUT_ELEMENT_DESC* layoutDesc, int nVL)
+	const D3D11_INPUT_ELEMENT_DESC* layoutDesc, int nVL, int constantsSize)
 {
 	ID3DBlob* psBlob=0;
 	ID3DBlob* vsBlob=0;
@@ -281,10 +266,33 @@ bool CRenderer::CreateShaderSetup(const char* setupName, const _TCHAR* vertexSha
 	{
 		return false;
 	}
+
+	ID3D11Buffer* constantBuffer = 0;
+
+	if(constantsSize)
+	{
+		D3D11_BUFFER_DESC constantBufferDesc;
+		memset(&constantBufferDesc, 0, sizeof(D3D11_BUFFER_DESC));
+
+		constantBufferDesc.BindFlags=D3D11_BIND_CONSTANT_BUFFER;
+		constantBufferDesc.ByteWidth=constantsSize;
+		constantBufferDesc.CPUAccessFlags=D3D11_CPU_ACCESS_WRITE;
+		constantBufferDesc.Usage=D3D11_USAGE_DYNAMIC;
+
+		hr=d3dDevice->CreateBuffer(&constantBufferDesc, 0, &constantBuffer);
+		if(FAILED(hr))
+		{
+			printf("Constant Buffer create failed\n");
+			return false;
+		}
+	}
+
 	SShaderSetup* setup=new SShaderSetup;
 	setup->inputLayout=inputLayout;
 	setup->pixelShader=pixelShader;
 	setup->vertexShader=vertexShader;
+	setup->constantBuffer=constantBuffer;
+	setup->constantsSize=constantsSize;
 	shaderSetupMap[setupName]=setup;
 	return true;
 }
