@@ -30,7 +30,7 @@ VertexShaderOutput main(AppData IN)
 {
 	VertexShaderOutput OUT;
 	OUT.position = float4(IN.position.xy, 0.5, 1.0f);
-	OUT.color = float4(IN.uv, 0.0, 1.0f);
+	OUT.color=float4(IN.position.yz, 0.0, 1.0f);
 	return OUT;
 
 	matrix mvp = mul(projectionMatrix, mul(viewMatrix, worldMatrix));

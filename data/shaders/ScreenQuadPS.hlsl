@@ -6,5 +6,5 @@ struct PixelShaderInput
 
 float4 main( PixelShaderInput IN ) : SV_TARGET0
 {
-	return float4(IN.pos.xyz,1);
+	return float4(frac(IN.pos.xy*4)>0.5,0, 1);
 }

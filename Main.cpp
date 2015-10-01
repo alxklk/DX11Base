@@ -57,7 +57,8 @@ LRESULT CALLBACK wp(HWND hwnd, unsigned int imsg, WPARAM wpar, LPARAM lpar)
 	return DefWindowProc(hwnd, imsg, wpar, lpar);
 }
 
-namespace teapot{
+namespace teapot
+{
 #include "teapot.h"
 }
 
@@ -91,9 +92,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	CScene* scene=new CScene;
 
 	CRTTexture* texP1=new CRTTexture;
-	texP1->Create(renderer->GetDevice(),gAppState.width, gAppState.height,DXGI_FORMAT_R8G8B8A8_UNORM);
+	texP1->Create(renderer->GetDevice(), gAppState.width, gAppState.height, DXGI_FORMAT_R8G8B8A8_UNORM);
 	CRTTexture* texP2=new CRTTexture;
-	texP2->Create(renderer->GetDevice(),gAppState.width, gAppState.height,DXGI_FORMAT_R8G8B8A8_UNORM);
+	texP2->Create(renderer->GetDevice(), gAppState.width, gAppState.height, DXGI_FORMAT_R8G8B8A8_UNORM);
 
 
 	CQuad* quad=new CQuad;
@@ -102,7 +103,16 @@ int _tmain(int argc, _TCHAR* argv[])
 	quad->SetTextureView(0);
 	quad->SetRTView(texP1->GetRTView());
 	scene->AddModel(quad);
-/*
+	CModel* model=new CModel;
+	model->Create(renderer->GetDevice(),
+		(VertexPosNormTexUV*)teapot::vb, sizeof(teapot::vb)/sizeof(VertexPosNormTexUV),
+		teapot::ib, sizeof(teapot::ib)/sizeof(unsigned short)
+		);
+	model->SetTextureView(texP2->GetShaderResourceView());
+	model->SetRTView(renderer->GetRTView());
+	scene->AddModel(model);
+
+	/*
 	CQuad* quadP1=new CQuad;
 	quadP1->Create(renderer->GetDevice());
 	quadP1->SetShaderSetup("quad");
@@ -116,15 +126,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	quadP2->SetTextureView(texP2->GetShaderResourceView());
 	quadP2->SetRTView(renderer->GetRTView());
 	scene->AddModel(quadP2);
-*/
-	CModel* model=new CModel;
-	model->Create(renderer->GetDevice(), 
-		(VertexPosNormTexUV*)teapot::vb, sizeof(teapot::vb)/sizeof(VertexPosNormTexUV),
-		teapot::ib, sizeof(teapot::ib)/sizeof(unsigned short)
-		);
-	model->SetTextureView(texP2->GetShaderResourceView());
-	model->SetRTView(renderer->GetRTView());
-	scene->AddModel(model);
+	*/
 
 	while(1)
 	{
@@ -140,7 +142,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		if(gAppState.quitRequested)
 			break;
 
-		
+
 		if(gAppState.reloadShaders)
 		{
 			gAppState.reloadShaders=false;
@@ -150,52 +152,36 @@ int _tmain(int argc, _TCHAR* argv[])
 					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
 					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
 				};
-
-				renderer->CreateShaderSetup("quad",
-					L"..\\data\\shaders\\ScreenQuadVS.hlsl",
-					L"..\\data\\shaders\\ScreenQuadPS.hlsl",
-					vertexLayoutDesc, 2);
+				renderer->CreateShaderSetup("quad",L"..\\data\\shaders\\ScreenQuadVS.hlsl",L"..\\data\\shaders\\ScreenQuadPS.hlsl",vertexLayoutDesc, 2);
 			}
 
-	{
-		D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[]=
-		{
-			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
-			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
-		};
+			{
+				D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[]=
+				{
+					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
+				};
+				renderer->CreateShaderSetup("quad_p1",L"..\\data\\shaders\\ScreenQuadPass1VS.hlsl",L"..\\data\\shaders\\ScreenQuadPass1PS.hlsl",vertexLayoutDesc, 2);
+			}
 
-		renderer->CreateShaderSetup("quad_p1",
-			L"..\\data\\shaders\\ScreenQuadPass1VS.hlsl",
-			L"..\\data\\shaders\\ScreenQuadPass1PS.hlsl",
-			vertexLayoutDesc, 2);
-	}
+			{
+				D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[]=
+				{
+					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
+				};
+				renderer->CreateShaderSetup("quad_p2",L"..\\data\\shaders\\ScreenQuadPass2VS.hlsl",L"..\\data\\shaders\\ScreenQuadPass2PS.hlsl",vertexLayoutDesc, 2);
+			}
 
-	{
-		D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[]=
-		{
-			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
-			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
-		};
-
-		renderer->CreateShaderSetup("quad_p2",
-			L"..\\data\\shaders\\ScreenQuadPass2VS.hlsl",
-			L"..\\data\\shaders\\ScreenQuadPass2PS.hlsl",
-			vertexLayoutDesc, 2);
-	}
-
-	{
-		D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[]=
-		{
-			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosNormTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
-			{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosNormTexUV, normal), D3D11_INPUT_PER_VERTEX_DATA, 0},
-			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosNormTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
-		};
-
-		renderer->CreateShaderSetup("model",
-			L"..\\data\\shaders\\RenderModelVS.hlsl",
-			L"..\\data\\shaders\\RenderModelPS.hlsl",
-			vertexLayoutDesc, 3);
-	}
+			{
+				D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[]=
+				{
+					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosNormTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosNormTexUV, normal), D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosNormTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
+				};
+				renderer->CreateShaderSetup("model",L"..\\data\\shaders\\RenderModelVS.hlsl",L"..\\data\\shaders\\RenderModelPS.hlsl",vertexLayoutDesc, 3);
+			}
 		}
 
 		renderer->RenderScene(scene);
