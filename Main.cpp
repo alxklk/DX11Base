@@ -103,37 +103,38 @@ int _tmain(int argc, _TCHAR* argv[])
 	quad->SetTextureView(0);
 	quad->SetRTView(texP1->GetRTView());
 	scene->AddModel(quad);
+
 	CModel* model=new CModel;
 	model->Create(renderer->GetDevice(),
 		(VertexPosNormTexUV*)teapot::vb, sizeof(teapot::vb)/sizeof(VertexPosNormTexUV),
 		teapot::ib, sizeof(teapot::ib)/sizeof(unsigned short)
 		);
-	model->SetTextureView(texP2->GetShaderResourceView());
-	model->SetRTView(renderer->GetRTView());
+	model->SetTextureView(0);
+	model->SetRTView(0);
 	scene->AddModel(model);
 
-	/*
+	
 	CQuad* quadP1=new CQuad;
 	quadP1->Create(renderer->GetDevice());
-	quadP1->SetShaderSetup("quad");
+	quadP1->SetShaderSetup("quad_p1");
 	quadP1->SetTextureView(texP1->GetShaderResourceView());
 	quadP1->SetRTView(texP2->GetRTView());
 	scene->AddModel(quadP1);
 
 	CQuad* quadP2=new CQuad;
 	quadP2->Create(renderer->GetDevice());
-	quadP2->SetShaderSetup("quad");
+	quadP2->SetShaderSetup("quad_p2");
 	quadP2->SetTextureView(texP2->GetShaderResourceView());
 	quadP2->SetRTView(renderer->GetRTView());
 	scene->AddModel(quadP2);
-	*/
+	
 
 	while(1)
 	{
-		while(!isPending())
+/*		while(!isPending())
 		{
-			SleepEx(10, TRUE);
-		}
+			SleepEx(1, TRUE);
+		}*/
 		while(pollQueue())
 		{
 			if(gAppState.quitRequested)
@@ -184,8 +185,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 		renderer->UseShaderSetup("quad");
 		float cb[4];
-		cb[0]=gAppState.lastMouseEvent.x/100.0;
-		cb[1]=gAppState.lastMouseEvent.y/100.0;
+		cb[0]=(float)gAppState.width;
+		cb[1]=(float)gAppState.height;
 
 		renderer->UpdateShaderConstants((void*)&cb);
 

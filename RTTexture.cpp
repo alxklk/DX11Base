@@ -14,7 +14,7 @@ bool CRTTexture::Create(ID3D11Device* device, int width, int height, DXGI_FORMAT
 	textureDesc.Height = height;
 	textureDesc.MipLevels = 1;
 	textureDesc.ArraySize = 1;
-	textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	textureDesc.SampleDesc.Count = 1;
 	textureDesc.Usage = D3D11_USAGE_DEFAULT;
 	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
@@ -24,6 +24,7 @@ bool CRTTexture::Create(ID3D11Device* device, int width, int height, DXGI_FORMAT
 	result = device->CreateTexture2D(&textureDesc, NULL, &texture);
 	if(FAILED(result))
 	{
+		printf("FAILed to create Texture\n");
 		return false;
 	}
 
@@ -34,6 +35,7 @@ bool CRTTexture::Create(ID3D11Device* device, int width, int height, DXGI_FORMAT
 	result = device->CreateRenderTargetView(texture, &renderTargetViewDesc, &renderTargetView);
 	if(FAILED(result))
 	{
+		printf("FAILed to create RT view\n");
 		return false;
 	}
 
@@ -45,6 +47,7 @@ bool CRTTexture::Create(ID3D11Device* device, int width, int height, DXGI_FORMAT
 	result = device->CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
 	if(FAILED(result))
 	{
+		printf("FAILed to create ShaderResource view\n");
 		return false;
 	}
 

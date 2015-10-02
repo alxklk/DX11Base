@@ -33,8 +33,17 @@ bool CRenderer::Init(HWND win)
 
 	UINT createDeviceFlags=0;
 
-	createDeviceFlags = D3D11_CREATE_DEVICE_DEBUG;
-
+	for(int i=0;i<30;i++)
+	{
+		if(::GetAsyncKeyState(VK_SHIFT))
+		{
+			MessageBeep(0xFFFFFFFF);
+			printf("Debug runtime selected\n");
+			createDeviceFlags = D3D11_CREATE_DEVICE_DEBUG;
+			break;
+		}
+		Sleep(10);
+	}
 	D3D_FEATURE_LEVEL featureLevels[]=
 	{
 		D3D_FEATURE_LEVEL_11_1,
@@ -108,13 +117,29 @@ bool CRenderer::Init(HWND win)
 	D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc;
 	memset(&depthStencilStateDesc, 0, sizeof(D3D11_DEPTH_STENCIL_DESC));
 
-	depthStencilStateDesc.DepthEnable=TRUE;
+	depthStencilStateDesc.DepthEnable=FALSE;
 	depthStencilStateDesc.DepthWriteMask=D3D11_DEPTH_WRITE_MASK_ALL;
-	depthStencilStateDesc.DepthFunc=D3D11_COMPARISON_LESS;
+	depthStencilStateDesc.DepthFunc=D3D11_COMPARISON_GREATER;
 	depthStencilStateDesc.StencilEnable=FALSE;
 
 	hr=d3dDevice->CreateDepthStencilState(&depthStencilStateDesc, &d3dDepthStencilState);
 	d3dDeviceContext->OMSetDepthStencilState(d3dDepthStencilState, 1);
+
+
+	D3D11_SAMPLER_DESC sampDesc;
+	memset(&sampDesc, 0, sizeof(sampDesc));
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;    
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampDesc.MinLOD = 0;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	//Create the Sample State
+	hr = d3dDevice->CreateSamplerState(&sampDesc, &d3dSamplerState);
+
+
 
 	D3D11_RASTERIZER_DESC rasterizerDesc;
 	memset(&rasterizerDesc, 0, sizeof(D3D11_RASTERIZER_DESC));
@@ -221,13 +246,20 @@ void CRenderer::RenderScene(CScene* scene)
 			const UINT vertexStride=model->GetVertexStride();
 			d3dDeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &vertexStride, &offset);
 
-			ID3D11ShaderResourceView* textureView=model->GetTextureView();
-			if(textureView)
-				d3dDeviceContext->PSSetShaderResources(0,1,&textureView);
-
 			ID3D11RenderTargetView* RTView=model->GetRTView();
 			if(RTView)
-				d3dDeviceContext->OMGetRenderTargets(1,&RTView,0);
+			{
+				ID3D11ShaderResourceView* zero=0;
+				d3dDeviceContext->PSSetShaderResources(0,1,&zero);
+				d3dDeviceContext->OMSetRenderTargets(1,&RTView,d3dDepthStencilView);
+			}
+
+			ID3D11ShaderResourceView* textureView=model->GetTextureView();
+			if(textureView)
+			{
+				d3dDeviceContext->PSSetSamplers(0,1,&d3dSamplerState);
+				d3dDeviceContext->PSSetShaderResources(0,1,&textureView);
+			}
 
 
 			d3dDeviceContext->DrawIndexed(model->GetIndexCount(), 0, 0);
@@ -238,7 +270,7 @@ void CRenderer::RenderScene(CScene* scene)
 		modelIndex++;
 	}
 
-	d3dDeviceContext->OMSetRenderTargets(1, &d3dRenderTargetView, NULL);
+	d3dDeviceContext->OMSetRenderTargets(1, &d3dRenderTargetView, d3dDepthStencilView);
 
 	d3dSwapChain->Present(0, 0);
 }

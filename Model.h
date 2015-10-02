@@ -59,8 +59,8 @@ public:
 	virtual int GetIndexCount()const{return indexCount;};
 	virtual int GetVertexStride()const { return sizeof(VertexPosNormTexUV); }
 	virtual const char* GetShaderSetup()const { return "model";}
-	virtual ID3D11ShaderResourceView* GetTextureView()const {return nullptr;}
-	virtual ID3D11RenderTargetView* GetRTView()const {return nullptr;}
+	virtual ID3D11ShaderResourceView* GetTextureView()const {return texture;}
+	virtual ID3D11RenderTargetView* GetRTView()const {return RT;}
 	virtual void SetTextureView(ID3D11ShaderResourceView* textureView){texture=textureView;}
 	virtual void SetRTView(ID3D11RenderTargetView*  RTView){RT=RTView;}
 	virtual ~CModel()
@@ -83,8 +83,8 @@ public:
 	virtual int GetIndexCount()const{return 6;}
 	virtual int GetVertexStride()const { return sizeof(VertexPosTexUV); }
 	virtual const char* GetShaderSetup()const { return shaderSetup; };
-	virtual ID3D11ShaderResourceView* GetTextureView()const {return nullptr;};
-	virtual ID3D11RenderTargetView* GetRTView()const {return nullptr;};
+	virtual ID3D11ShaderResourceView* GetTextureView()const {return texture;};
+	virtual ID3D11RenderTargetView* GetRTView()const {return RT;};
 	virtual void SetTextureView(ID3D11ShaderResourceView* textureView){texture=textureView;}
 	virtual void SetRTView(ID3D11RenderTargetView*  RTView){RT=RTView;}
 	virtual ~CQuad()

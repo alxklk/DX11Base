@@ -27,6 +27,7 @@ class CRenderer
 
 	ID3D11DepthStencilState* d3dDepthStencilState;
 	ID3D11RasterizerState* d3dRasterizerState;
+	ID3D11SamplerState* d3dSamplerState;
 	D3D11_VIEWPORT Viewport;
 
 	ID3D11Buffer* constantBuffers[3];
