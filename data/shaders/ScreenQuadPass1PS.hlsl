@@ -17,12 +17,27 @@ float4 main( PixelShaderInput IN ) : SV_TARGET0
 {
 	float4 c=0;
 	float w=0;
-	for(int i=0;i<=50;i++)
+
+	float2 uv=(IN.pos.xy)/2+0.5;
+	float4 ub=tex.Sample(sam,uv);
+//	return float4(uv,0,1);
+//	return ub;
+
+	float2 uvscr=uv;
+	uvscr*=scrsize.xy;
+	float2 mp=mpos.xy;
+
+	for(int i=-25;i<=25;i++)
 	{
-		float x=i/50.0-0.5;
-		float wi=exp(-x*x/25.0/25.0);
-		c+=tex.Sample(sam,IN.pos.xy/2+float2(x*0.003,0))*wi;
+		float x=i/25.0;
+		float wi=exp(-x*x);
+		c+=tex.Sample(sam,IN.pos.xy/2-0.5+float2(x*0.03,0))*wi;
 		w+=wi;
 	}
+
+	if(length(uvscr-mp)>200)
+		return ub;
+
+
 	return float4(c.rgb/w,1);
 }

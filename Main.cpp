@@ -151,7 +151,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
 					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
 				};
-				renderer->CreateShaderSetup("quad",L"..\\data\\shaders\\ScreenQuadVS.hlsl",L"..\\data\\shaders\\ScreenQuadPS.hlsl",vertexLayoutDesc, 2, sizeof(float)*4);
+				renderer->CreateShaderSetup("quad",L"..\\data\\shaders\\ScreenQuadVS.hlsl",L"..\\data\\shaders\\ScreenQuadPS.hlsl",vertexLayoutDesc, 2, sizeof(float)*8);
 			}
 
 			{
@@ -160,7 +160,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
 					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
 				};
-				renderer->CreateShaderSetup("quad_p1",L"..\\data\\shaders\\ScreenQuadPass1VS.hlsl",L"..\\data\\shaders\\ScreenQuadPass1PS.hlsl",vertexLayoutDesc, 2);
+				renderer->CreateShaderSetup("quad_p1",L"..\\data\\shaders\\ScreenQuadPass1VS.hlsl",L"..\\data\\shaders\\ScreenQuadPass1PS.hlsl",vertexLayoutDesc, 2, sizeof(float)*8);
 			}
 
 			{
@@ -169,7 +169,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
 					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
 				};
-				renderer->CreateShaderSetup("quad_p2",L"..\\data\\shaders\\ScreenQuadPass2VS.hlsl",L"..\\data\\shaders\\ScreenQuadPass2PS.hlsl",vertexLayoutDesc, 2);
+				renderer->CreateShaderSetup("quad_p2",L"..\\data\\shaders\\ScreenQuadPass2VS.hlsl",L"..\\data\\shaders\\ScreenQuadPass2PS.hlsl",vertexLayoutDesc, 2, sizeof(float)*8);
 			}
 
 			{
@@ -184,10 +184,21 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 
 		renderer->UseShaderSetup("quad");
-		float cb[4];
-		cb[0]=(float)gAppState.width;
-		cb[1]=(float)gAppState.height;
+		struct{
+			float sz[4];
+			float mp[4];
+		}cb;
+		cb.sz[0]=(float)gAppState.width;
+		cb.sz[1]=(float)gAppState.height;
+		cb.mp[0]=(float)gAppState.lastMouseEvent.x;
+		cb.mp[1]=(float)gAppState.lastMouseEvent.y;
 
+
+		renderer->UseShaderSetup("quad");
+		renderer->UpdateShaderConstants((void*)&cb);
+		renderer->UseShaderSetup("quad_p1");
+		renderer->UpdateShaderConstants((void*)&cb);
+		renderer->UseShaderSetup("quad_p2");
 		renderer->UpdateShaderConstants((void*)&cb);
 
 
