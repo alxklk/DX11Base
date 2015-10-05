@@ -1,6 +1,11 @@
 Texture2D tex : register(t0);
 SamplerState sam : register(s0);
 
+cbuffer Xx : register(b0)
+{
+	float4 scrsize;
+	float4 mpos;
+}
 
 struct PixelShaderInput
 {

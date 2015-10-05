@@ -1,6 +1,7 @@
 cbuffer Xx : register(b0)
 {
-	float3 scrsize;
+	float4 scrsize;
+	float4 mpos;
 }
 
 struct PixelShaderInput
