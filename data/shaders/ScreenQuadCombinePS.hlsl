@@ -7,6 +7,7 @@ cbuffer Xx : register(b0)
 	float4 mpos;
 }
 
+
 struct PixelShaderInput
 {
 	float4 position : SV_POSITION;

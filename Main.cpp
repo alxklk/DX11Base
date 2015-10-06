@@ -125,8 +125,15 @@ int _tmain(int argc, _TCHAR* argv[])
 	quadP2->Create(renderer->GetDevice());
 	quadP2->SetShaderSetup("quad_p2");
 	quadP2->SetTextureView(texP2->GetShaderResourceView());
-	quadP2->SetRTView(renderer->GetRTView());
+	quadP2->SetRTView(texP1->GetRTView());
 	scene->AddModel(quadP2);
+	
+	CQuad* quadCombine=new CQuad;
+	quadCombine->Create(renderer->GetDevice());
+	quadCombine->SetShaderSetup("quad_combine");
+	quadCombine->SetTextureView(texP1->GetShaderResourceView());
+	quadCombine->SetRTView(renderer->GetRTView());
+	scene->AddModel(quadCombine);
 	
 
 	while(1)
@@ -160,7 +167,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
 					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
 				};
-				renderer->CreateShaderSetup("quad_p1",L"..\\data\\shaders\\ScreenQuadPass1VS.hlsl",L"..\\data\\shaders\\ScreenQuadPass1PS.hlsl",vertexLayoutDesc, 2, sizeof(float)*8);
+				renderer->CreateShaderSetup("quad_p1",L"..\\data\\shaders\\ScreenQuadVS.hlsl",L"..\\data\\shaders\\ScreenQuadPass1PS.hlsl",vertexLayoutDesc, 2, sizeof(float)*8);
 			}
 
 			{
@@ -169,7 +176,16 @@ int _tmain(int argc, _TCHAR* argv[])
 					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
 					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
 				};
-				renderer->CreateShaderSetup("quad_p2",L"..\\data\\shaders\\ScreenQuadPass2VS.hlsl",L"..\\data\\shaders\\ScreenQuadPass2PS.hlsl",vertexLayoutDesc, 2, sizeof(float)*8);
+				renderer->CreateShaderSetup("quad_p2",L"..\\data\\shaders\\ScreenQuadVS.hlsl",L"..\\data\\shaders\\ScreenQuadPass2PS.hlsl",vertexLayoutDesc, 2, sizeof(float)*8);
+			}
+
+			{
+				D3D11_INPUT_ELEMENT_DESC vertexLayoutDesc[]=
+				{
+					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
+				};
+				renderer->CreateShaderSetup("quad_combine",L"..\\data\\shaders\\ScreenQuadVS.hlsl",L"..\\data\\shaders\\ScreenQuadCombinePS.hlsl",vertexLayoutDesc, 2, sizeof(float)*8);
 			}
 
 			{
@@ -199,6 +215,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		renderer->UseShaderSetup("quad_p1");
 		renderer->UpdateShaderConstants((void*)&cb);
 		renderer->UseShaderSetup("quad_p2");
+		renderer->UpdateShaderConstants((void*)&cb);
+		renderer->UseShaderSetup("quad_combine");
 		renderer->UpdateShaderConstants((void*)&cb);
 
 
