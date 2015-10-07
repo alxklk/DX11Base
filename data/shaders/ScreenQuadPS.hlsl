@@ -18,8 +18,5 @@ float4 main( PixelShaderInput IN ) : SV_TARGET0
 	uv*=scrsize.xy;
 	float2 chuv=frac(uv/100)>0.5;
 	float ch=(chuv.x+chuv.y)==1;
-
-	float2 mp=mpos.xy;
-
 	return float4(1,ch,ch,1);
 }

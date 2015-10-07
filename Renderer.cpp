@@ -251,16 +251,19 @@ void CRenderer::RenderScene(CScene* scene)
 			{
 				ID3D11ShaderResourceView* zero=0;
 				d3dDeviceContext->PSSetShaderResources(0,1,&zero);
+				d3dDeviceContext->PSSetShaderResources(1,1,&zero);
 				d3dDeviceContext->OMSetRenderTargets(1,&RTView,d3dDepthStencilView);
 			}
 
-			ID3D11ShaderResourceView* textureView=model->GetTextureView();
-			if(textureView)
+			for(int i=0;i<16;i++)
 			{
-				d3dDeviceContext->PSSetSamplers(0,1,&d3dSamplerState);
-				d3dDeviceContext->PSSetShaderResources(0,1,&textureView);
+				ID3D11ShaderResourceView* textureView=model->GetTextureView(i);
+				if(textureView)
+				{
+					d3dDeviceContext->PSSetSamplers(i,1,&d3dSamplerState);
+					d3dDeviceContext->PSSetShaderResources(i,1,&textureView);
+				}
 			}
-
 
 			d3dDeviceContext->DrawIndexed(model->GetIndexCount(), 0, 0);
 		}

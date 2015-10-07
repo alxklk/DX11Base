@@ -95,13 +95,16 @@ int _tmain(int argc, _TCHAR* argv[])
 	texP1->Create(renderer->GetDevice(), gAppState.width, gAppState.height, DXGI_FORMAT_R8G8B8A8_UNORM);
 	CRTTexture* texP2=new CRTTexture;
 	texP2->Create(renderer->GetDevice(), gAppState.width, gAppState.height, DXGI_FORMAT_R8G8B8A8_UNORM);
+	CRTTexture* texP0=new CRTTexture;
+	texP0->Create(renderer->GetDevice(), gAppState.width, gAppState.height, DXGI_FORMAT_R8G8B8A8_UNORM);
 
 
 	CQuad* quad=new CQuad;
 	quad->Create(renderer->GetDevice());
 	quad->SetShaderSetup("quad");
-	quad->SetTextureView(0);
-	quad->SetRTView(texP1->GetRTView());
+	quad->SetTextureView(0,0);
+	quad->SetTextureView(1,0);
+	quad->SetRTView(texP0->GetRTView());
 	scene->AddModel(quad);
 
 	CModel* model=new CModel;
@@ -109,7 +112,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		(VertexPosNormTexUV*)teapot::vb, sizeof(teapot::vb)/sizeof(VertexPosNormTexUV),
 		teapot::ib, sizeof(teapot::ib)/sizeof(unsigned short)
 		);
-	model->SetTextureView(0);
+	model->SetTextureView(0,0);
 	model->SetRTView(0);
 	scene->AddModel(model);
 
@@ -117,21 +120,22 @@ int _tmain(int argc, _TCHAR* argv[])
 	CQuad* quadP1=new CQuad;
 	quadP1->Create(renderer->GetDevice());
 	quadP1->SetShaderSetup("quad_p1");
-	quadP1->SetTextureView(texP1->GetShaderResourceView());
-	quadP1->SetRTView(texP2->GetRTView());
+	quadP1->SetTextureView(0,texP0->GetShaderResourceView());
+	quadP1->SetRTView(texP1->GetRTView());
 	scene->AddModel(quadP1);
 
 	CQuad* quadP2=new CQuad;
 	quadP2->Create(renderer->GetDevice());
 	quadP2->SetShaderSetup("quad_p2");
-	quadP2->SetTextureView(texP2->GetShaderResourceView());
-	quadP2->SetRTView(texP1->GetRTView());
+	quadP2->SetTextureView(0,texP1->GetShaderResourceView());
+	quadP2->SetRTView(texP2->GetRTView());
 	scene->AddModel(quadP2);
 	
 	CQuad* quadCombine=new CQuad;
 	quadCombine->Create(renderer->GetDevice());
 	quadCombine->SetShaderSetup("quad_combine");
-	quadCombine->SetTextureView(texP1->GetShaderResourceView());
+	quadCombine->SetTextureView(0,texP0->GetShaderResourceView());
+	quadCombine->SetTextureView(1,texP2->GetShaderResourceView());
 	quadCombine->SetRTView(renderer->GetRTView());
 	scene->AddModel(quadCombine);
 	
