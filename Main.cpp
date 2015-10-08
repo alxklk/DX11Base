@@ -199,29 +199,39 @@ int _tmain(int argc, _TCHAR* argv[])
 					{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosNormTexUV, normal), D3D11_INPUT_PER_VERTEX_DATA, 0},
 					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosNormTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
 				};
-				renderer->CreateShaderSetup("model",L"..\\data\\shaders\\RenderModelVS.hlsl",L"..\\data\\shaders\\RenderModelPS.hlsl",vertexLayoutDesc, 3);
+				renderer->CreateShaderSetup("model",L"..\\data\\shaders\\RenderModelVS.hlsl",L"..\\data\\shaders\\RenderModelPS.hlsl",vertexLayoutDesc, 3, sizeof(float)*16);
 			}
 		}
 
-		renderer->UseShaderSetup("quad");
 		struct{
 			float sz[4];
 			float mp[4];
-		}cb;
-		cb.sz[0]=(float)gAppState.width;
-		cb.sz[1]=(float)gAppState.height;
-		cb.mp[0]=(float)gAppState.lastMouseEvent.x;
-		cb.mp[1]=(float)gAppState.lastMouseEvent.y;
+		}cb_quad;
+		cb_quad.sz[0]=(float)gAppState.width;
+		cb_quad.sz[1]=(float)gAppState.height;
+		cb_quad.mp[0]=(float)gAppState.lastMouseEvent.x;
+		cb_quad.mp[1]=(float)gAppState.lastMouseEvent.y;
 
 
 		renderer->UseShaderSetup("quad");
-		renderer->UpdateShaderConstants((void*)&cb);
+		renderer->UpdateShaderConstants((void*)&cb_quad);
 		renderer->UseShaderSetup("quad_p1");
-		renderer->UpdateShaderConstants((void*)&cb);
+		renderer->UpdateShaderConstants((void*)&cb_quad);
 		renderer->UseShaderSetup("quad_p2");
-		renderer->UpdateShaderConstants((void*)&cb);
+		renderer->UpdateShaderConstants((void*)&cb_quad);
 		renderer->UseShaderSetup("quad_combine");
-		renderer->UpdateShaderConstants((void*)&cb);
+		renderer->UpdateShaderConstants((void*)&cb_quad);
+
+
+		struct
+		{
+			XMMATRIX wm;
+		}cb_model;
+		
+		
+		cb_model.wm=XMMatrixRotationX(0.0f/*gAppState.lastMouseEvent.x/100.0f*/);
+		renderer->UseShaderSetup("model");
+		renderer->UpdateShaderConstants((void*)&cb_model);
 
 
 		renderer->RenderScene(scene);
