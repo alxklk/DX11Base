@@ -1,4 +1,4 @@
-cbuffer buf0 : register(b0)
+cbuffer buf : register(b0)
 {
 	float4x4 wm;
 }
@@ -20,9 +20,9 @@ struct VertexShaderOutput
 VertexShaderOutput main(AppData IN)
 {
 	VertexShaderOutput OUT;
-	OUT.position = float4(IN.position.xy, 0.5, 1.0f);
-//	OUT.position = mul(wm, float4(IN.position, 1.0f));
-	OUT.position.x += wm._01;
+	OUT.position=float4(IN.position.x, IN.position.y, IN.position.z*0.1+0.5, 1.0f);
+	OUT.position = mul(wm, float4(IN.position, 1.0f));
+//	OUT.position.z += wm._11*1.0;
 	OUT.color=float4(IN.position.yz, IN.position.x*0.1, 1.0f);
 	OUT.pos=IN.position.xyz;
 	return OUT;

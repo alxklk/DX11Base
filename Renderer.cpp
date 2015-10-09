@@ -180,8 +180,10 @@ bool CRenderer::UseShaderSetup(const char* shaderSetup)
 	d3dDeviceContext->VSSetShader(currentShaderSetup->vertexShader, nullptr, 0);
 	d3dDeviceContext->PSSetShader(currentShaderSetup->pixelShader, nullptr, 0);
 	if(currentShaderSetup->constantBuffer)
-		d3dDeviceContext->PSSetConstantBuffers(0,1,&currentShaderSetup->constantBuffer);
-//	d3dDeviceContext->VSSetConstantBuffers(2,1,&currentShaderSetup->constantBuffer);
+	{
+		d3dDeviceContext->PSSetConstantBuffers(0, 1, &currentShaderSetup->constantBuffer);
+		d3dDeviceContext->VSSetConstantBuffers(0, 1, &currentShaderSetup->constantBuffer);
+	}
 	return true;
 }
 

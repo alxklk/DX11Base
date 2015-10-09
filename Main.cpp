@@ -229,7 +229,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		}cb_model;
 		
 		
-		cb_model.wm=XMMatrixRotationX(0.0f/*gAppState.lastMouseEvent.x/100.0f*/);
+		cb_model.wm=XMMatrixRotationX(gAppState.lastMouseEvent.x/100.0f);
+//		for(int i=0; i<16; i++)
+//			cb_model.wm[i]=wrldm.r[i/4].m128_f32[i%4];
 		renderer->UseShaderSetup("model");
 		renderer->UpdateShaderConstants((void*)&cb_model);
 
