@@ -14,9 +14,6 @@ bool CRenderer::Init(HWND win)
 	int width=clientRect.right-clientRect.left;
 	int height=clientRect.bottom-clientRect.top;
 
-	Viewport.Width=(float)width;
-	Viewport.Height=(float)height;
-
 	swapChainDesc.BufferCount=1;
 	swapChainDesc.BufferDesc.Width=width;
 	swapChainDesc.BufferDesc.Height=height;
@@ -40,6 +37,7 @@ bool CRenderer::Init(HWND win)
 			MessageBeep(0xFFFFFFFF);
 			printf("Debug runtime selected\n");
 			createDeviceFlags = D3D11_CREATE_DEVICE_DEBUG;
+			debug=true;
 			break;
 		}
 		Sleep(10);
@@ -118,12 +116,17 @@ bool CRenderer::Init(HWND win)
 	memset(&depthStencilStateDesc, 0, sizeof(D3D11_DEPTH_STENCIL_DESC));
 
 	depthStencilStateDesc.DepthEnable=FALSE;
-	depthStencilStateDesc.DepthWriteMask=D3D11_DEPTH_WRITE_MASK_ALL;
-	depthStencilStateDesc.DepthFunc=D3D11_COMPARISON_GREATER;
+	depthStencilStateDesc.DepthWriteMask=D3D11_DEPTH_WRITE_MASK_ZERO;
+	depthStencilStateDesc.DepthFunc=D3D11_COMPARISON_LESS;
 	depthStencilStateDesc.StencilEnable=FALSE;
 
-	hr=d3dDevice->CreateDepthStencilState(&depthStencilStateDesc, &d3dDepthStencilState);
-	d3dDeviceContext->OMSetDepthStencilState(d3dDepthStencilState, 1);
+	hr=d3dDevice->CreateDepthStencilState(&depthStencilStateDesc, &d3dDepthStencilStateOff);
+
+	depthStencilStateDesc.DepthEnable=TRUE;
+	depthStencilStateDesc.DepthWriteMask=D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStencilStateDesc.DepthFunc=D3D11_COMPARISON_LESS;
+	depthStencilStateDesc.StencilEnable=FALSE;
+	hr=d3dDevice->CreateDepthStencilState(&depthStencilStateDesc, &d3dDepthStencilStateOn);
 
 
 	D3D11_SAMPLER_DESC sampDesc;
@@ -145,10 +148,10 @@ bool CRenderer::Init(HWND win)
 	memset(&rasterizerDesc, 0, sizeof(D3D11_RASTERIZER_DESC));
 
 	rasterizerDesc.AntialiasedLineEnable=FALSE;
-	rasterizerDesc.CullMode=D3D11_CULL_NONE;
+	rasterizerDesc.CullMode=D3D11_CULL_FRONT;
 	rasterizerDesc.DepthBias=0;
 	rasterizerDesc.DepthBiasClamp=0.0f;
-	rasterizerDesc.DepthClipEnable=FALSE;
+	rasterizerDesc.DepthClipEnable=TRUE;
 	rasterizerDesc.FillMode=D3D11_FILL_SOLID;
 	rasterizerDesc.FrontCounterClockwise=FALSE;
 	rasterizerDesc.MultisampleEnable=FALSE;
@@ -161,6 +164,14 @@ bool CRenderer::Init(HWND win)
 		printf("Fail\n");
 		return false;
 	}
+
+	Viewport.Width=(float)width;
+	Viewport.Height=(float)height;
+	Viewport.TopLeftX=0.0f;
+	Viewport.TopLeftY=0.0f;
+	Viewport.MinDepth=0.0f;
+	Viewport.MaxDepth=1.0f;
+
 	return true;
 }
 
@@ -199,11 +210,6 @@ bool CRenderer::UpdateShaderConstants(void* constantBuffer)
 		for(int i=0;i<currentShaderSetup->constantsSize;i++)
 			((char*)mr.pData)[i]=((char*)constantBuffer)[i];
 		d3dDeviceContext->Unmap(currentShaderSetup->constantBuffer,0);
-
-
-//		d3dDeviceContext->UpdateSubresource(currentShaderSetup->constantBuffer, 0, 0, &constantBuffer, 0, 0);
-//		d3dDeviceContext->PSSetConstantBuffers(0,1,&currentShaderSetup->constantBuffer);
-
 		return true;
 	}
 	return false;
@@ -217,15 +223,17 @@ void CRenderer::RenderScene(CScene* scene)
 	float clearColor[4]={0.2f,
 		0.2f+0.1f*(y&0xff)/255.0f,
 		0.2f+0.1f*(x&0xff)/255.0f, 1};
-	float clearDepth=0.0f;
+	float clearDepth=1.0f;
 	UINT8 clearStencil=0;
 	d3dDeviceContext->ClearRenderTargetView(d3dRenderTargetView, clearColor);
-	d3dDeviceContext->ClearDepthStencilView(d3dDepthStencilView, D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL, clearDepth, clearStencil);
+	d3dDeviceContext->ClearDepthStencilView(d3dDepthStencilView, D3D11_CLEAR_DEPTH, clearDepth, 0);
 
 
 	d3dDeviceContext->RSSetState(d3dRasterizerState);
 	d3dDeviceContext->RSSetViewports(1, &Viewport);
-	d3dDeviceContext->OMSetRenderTargets(1, &d3dRenderTargetView, NULL);
+	d3dDeviceContext->OMSetRenderTargets(1, &d3dRenderTargetView, d3dDepthStencilView);
+
+
 
 	size_t modelIndex=0;
 	while(true)
@@ -267,6 +275,11 @@ void CRenderer::RenderScene(CScene* scene)
 				}
 			}
 
+			if(model->GetZEnabled())
+				d3dDeviceContext->OMSetDepthStencilState(d3dDepthStencilStateOn, 0);
+			else
+				d3dDeviceContext->OMSetDepthStencilState(d3dDepthStencilStateOff, 0);
+
 			d3dDeviceContext->DrawIndexed(model->GetIndexCount(), 0, 0);
 		}
 
@@ -282,6 +295,44 @@ void CRenderer::RenderScene(CScene* scene)
 
 bool CRenderer::Done()
 {
+
+	SafeRelease(d3dRenderTargetView);
+	SafeRelease(d3dDepthStencilView);
+	SafeRelease(d3dDepthStencilBuffer);
+
+	SafeRelease(d3dDepthStencilStateOff);
+	SafeRelease(d3dDepthStencilStateOn);
+	SafeRelease(d3dRasterizerState);
+	SafeRelease(d3dSamplerState);
+
+	SafeRelease(d3dDeviceContext);
+	SafeRelease(d3dSwapChain);
+
+	auto iShader=shaderSetupMap.begin();
+	while(iShader!=shaderSetupMap.end())
+	{ 
+		SShaderSetup& sSetup=*iShader->second;
+		SafeRelease(sSetup.constantBuffer);
+		SafeRelease(sSetup.inputLayout);
+		SafeRelease(sSetup.pixelShader);
+		SafeRelease(sSetup.vertexShader);
+		++iShader;
+	}
+
+	if(debug)
+	{
+		ID3D11Debug* d3dDebug=nullptr;
+		d3dDevice->QueryInterface(__uuidof(ID3D11Debug), (void**)(&d3dDebug));
+		if(::GetAsyncKeyState(VK_SHIFT))
+		{
+			d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+		}
+		else
+		{
+			d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY);
+		}
+
+	}
 	SafeRelease(d3dDevice);
 	return true;
 }
@@ -290,7 +341,6 @@ bool CRenderer::Done()
 bool CRenderer::CreateShaderSetup(const char* setupName, const _TCHAR* vertexShaderFile, const _TCHAR* pixelShaderFile,
 	const D3D11_INPUT_ELEMENT_DESC* layoutDesc, int nVL, int constantsSize)
 {
-	ID3DBlob* psBlob=0;
 	ID3DBlob* vsBlob=0;
 	ID3D11InputLayout* inputLayout=0;
 
@@ -331,6 +381,7 @@ bool CRenderer::CreateShaderSetup(const char* setupName, const _TCHAR* vertexSha
 	setup->constantBuffer=constantBuffer;
 	setup->constantsSize=constantsSize;
 	shaderSetupMap[setupName]=setup;
+	SafeRelease(vsBlob);
 	return true;
 }
 
@@ -376,6 +427,7 @@ ID3D11PixelShader* CRenderer::LoadPixelShader(const _TCHAR* fileName, const char
 	if(ID3DBlob* shaderBlob=LoadShader(fileName, entryPoint, profile))
 	{
 		d3dDevice->CreatePixelShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, &newShader);
+		SafeRelease(shaderBlob);
 	}
 	return newShader;
 }

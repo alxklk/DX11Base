@@ -47,19 +47,19 @@ bool CModel::Create(ID3D11Device* device, VertexPosNormTexUV* vertices, int nVer
 }
 
 
-bool CQuad::Create(ID3D11Device* device)
+bool CQuad::Create(ID3D11Device* device, float depth)
 {
 	VertexPosTexUV Vertices[4]=
 	{
-		{XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f)},
-		{XMFLOAT3(-1.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f)},
-		{XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f)},
-		{XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f)}
+		{XMFLOAT3(-1.0f, -1.0f, depth), XMFLOAT2(0.0f, 0.0f)},
+		{XMFLOAT3(-1.0f, 1.0f, depth), XMFLOAT2(0.0f, 1.0f)},
+		{XMFLOAT3(1.0f, 1.0f, depth), XMFLOAT2(1.0f, 1.0f)},
+		{XMFLOAT3(1.0f, -1.0f, depth), XMFLOAT2(1.0f, 0.0f)}
 	};
 
 	WORD Indicies[6]=
 	{
-		0, 1, 2, 0, 2, 3
+		0, 2, 1, 0, 3, 2
 	};
 
 	D3D11_BUFFER_DESC vertexBufferDesc;

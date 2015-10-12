@@ -37,6 +37,7 @@ struct SMouseEvent
 	bool key_alt;
 	bool key_shift;
 	bool key_ctrl;
+	int frame;
 };
 
 inline bool ProcessMouseEvent(HWND hwnd, unsigned int imsg, WPARAM wpar, LPARAM lpar, SMouseEvent& destEvent)

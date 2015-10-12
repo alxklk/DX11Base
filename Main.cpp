@@ -14,6 +14,7 @@ public:
 	int height;
 	bool quitRequested;
 	bool reloadShaders;
+	int frameStamp;
 	SMouseEvent lastMouseEvent;
 
 	SAppState()
@@ -21,6 +22,7 @@ public:
 		, height(1000)
 		, quitRequested(false)
 		, reloadShaders(true)
+		, frameStamp(0)
 	{
 
 	}
@@ -38,6 +40,7 @@ LRESULT CALLBACK wp(HWND hwnd, unsigned int imsg, WPARAM wpar, LPARAM lpar)
 {
 	if(ProcessMouseEvent(hwnd, imsg, wpar, lpar, gAppState.lastMouseEvent))
 	{
+		gAppState.lastMouseEvent.frame=gAppState.frameStamp;
 	}
 	else if(imsg==WM_DESTROY)
 	{
@@ -49,6 +52,11 @@ LRESULT CALLBACK wp(HWND hwnd, unsigned int imsg, WPARAM wpar, LPARAM lpar)
 		{
 			printf("Reload shaders\n");
 			gAppState.reloadShaders=true;
+		}
+		else if(wpar==VK_ESCAPE)
+		{
+			printf("Reload shaders\n");
+			gAppState.quitRequested=true;
 		}
 	}
 	else if(imsg==WM_KEYUP)
@@ -100,7 +108,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 	CQuad* quad=new CQuad;
-	quad->Create(renderer->GetDevice());
+	quad->Create(renderer->GetDevice(),0.9f);
 	quad->SetShaderSetup("quad");
 	quad->SetTextureView(0,0);
 	quad->SetTextureView(1,0);
@@ -142,10 +150,10 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	while(1)
 	{
-/*		while(!isPending())
-		{
-			SleepEx(1, TRUE);
-		}*/
+		/*		while(!isPending())
+				{
+				SleepEx(1, TRUE);
+				}*/
 		while(pollQueue())
 		{
 			if(gAppState.quitRequested)
@@ -162,7 +170,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
 					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
 				};
-				renderer->CreateShaderSetup("quad",L"..\\data\\shaders\\ScreenQuadVS.hlsl",L"..\\data\\shaders\\ScreenQuadPS.hlsl",vertexLayoutDesc, 2, sizeof(float)*8);
+				renderer->CreateShaderSetup("quad", L"..\\data\\shaders\\ScreenQuadVS.hlsl", L"..\\data\\shaders\\ScreenQuadPS.hlsl", vertexLayoutDesc, 2, sizeof(float)*8);
 			}
 
 			{
@@ -171,7 +179,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
 					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
 				};
-				renderer->CreateShaderSetup("quad_p1",L"..\\data\\shaders\\ScreenQuadVS.hlsl",L"..\\data\\shaders\\ScreenQuadPass1PS.hlsl",vertexLayoutDesc, 2, sizeof(float)*8);
+				renderer->CreateShaderSetup("quad_p1", L"..\\data\\shaders\\ScreenQuadVS.hlsl", L"..\\data\\shaders\\ScreenQuadPass1PS.hlsl", vertexLayoutDesc, 2, sizeof(float)*8);
 			}
 
 			{
@@ -180,7 +188,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
 					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
 				};
-				renderer->CreateShaderSetup("quad_p2",L"..\\data\\shaders\\ScreenQuadVS.hlsl",L"..\\data\\shaders\\ScreenQuadPass2PS.hlsl",vertexLayoutDesc, 2, sizeof(float)*8);
+				renderer->CreateShaderSetup("quad_p2", L"..\\data\\shaders\\ScreenQuadVS.hlsl", L"..\\data\\shaders\\ScreenQuadPass2PS.hlsl", vertexLayoutDesc, 2, sizeof(float)*8);
 			}
 
 			{
@@ -189,7 +197,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosTexUV, pos), D3D11_INPUT_PER_VERTEX_DATA, 0},
 					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
 				};
-				renderer->CreateShaderSetup("quad_combine",L"..\\data\\shaders\\ScreenQuadVS.hlsl",L"..\\data\\shaders\\ScreenQuadCombinePS.hlsl",vertexLayoutDesc, 2, sizeof(float)*8);
+				renderer->CreateShaderSetup("quad_combine", L"..\\data\\shaders\\ScreenQuadVS.hlsl", L"..\\data\\shaders\\ScreenQuadCombinePS.hlsl", vertexLayoutDesc, 2, sizeof(float)*8);
 			}
 
 			{
@@ -199,11 +207,12 @@ int _tmain(int argc, _TCHAR* argv[])
 					{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VertexPosNormTexUV, normal), D3D11_INPUT_PER_VERTEX_DATA, 0},
 					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexPosNormTexUV, uv), D3D11_INPUT_PER_VERTEX_DATA, 0}
 				};
-				renderer->CreateShaderSetup("model",L"..\\data\\shaders\\RenderModelVS.hlsl",L"..\\data\\shaders\\RenderModelPS.hlsl",vertexLayoutDesc, 3, sizeof(float)*16);
+				renderer->CreateShaderSetup("model", L"..\\data\\shaders\\RenderModelVS.hlsl", L"..\\data\\shaders\\RenderModelPS.hlsl", vertexLayoutDesc, 3, sizeof(float)*16);
 			}
 		}
 
-		struct{
+		struct
+		{
 			float sz[4];
 			float mp[4];
 		}cb_quad;
@@ -223,20 +232,39 @@ int _tmain(int argc, _TCHAR* argv[])
 		renderer->UpdateShaderConstants((void*)&cb_quad);
 
 
-		struct
+		static struct S_CBModel
 		{
 			XMMATRIX wm;
+			S_CBModel() { wm=XMMatrixIdentity(); }
 		}cb_model;
-		
-		
-		cb_model.wm=XMMatrixRotationX(gAppState.lastMouseEvent.x/100.0f);
-//		for(int i=0; i<16; i++)
+
+
+		if(gAppState.lastMouseEvent.frame==gAppState.frameStamp)
+		{
+			if(gAppState.lastMouseEvent.button_l)
+			{
+				float dy=gAppState.lastMouseEvent.delta_y/100.0f;
+				float dx=gAppState.lastMouseEvent.delta_x/100.0f;
+
+//				cb_model.wm=XMMatrixMultiply(XMMatrixRotationX(dy), cb_model.wm);
+//				cb_model.wm=XMMatrixMultiply(XMMatrixRotationY(dx), cb_model.wm);
+
+				float l=sqrt(dx*dx+dy*dy);
+
+				XMFLOAT4 rotQuatV4(-dy*sin(l), dx*sin(l), 0, cos(l));
+				XMVECTOR rotQuat=XMLoadFloat4(&rotQuatV4);
+				rotQuat=XMQuaternionNormalize(rotQuat);
+				cb_model.wm=XMMatrixMultiply(cb_model.wm, XMMatrixRotationQuaternion(rotQuat));
+			}
+		}
+		//		for(int i=0; i<16; i++)
 //			cb_model.wm[i]=wrldm.r[i/4].m128_f32[i%4];
 		renderer->UseShaderSetup("model");
 		renderer->UpdateShaderConstants((void*)&cb_model);
 
 
 		renderer->RenderScene(scene);
+		gAppState.frameStamp++;
 
 	}
 

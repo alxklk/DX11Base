@@ -29,6 +29,7 @@ public:
 	virtual ID3D11Buffer *const GetVertexBuffer()const=0;
 	virtual ID3D11Buffer* GetIndexBuffer()const=0;
 	virtual int GetIndexCount()const=0;
+	virtual bool GetZEnabled()const=0;
 	virtual int GetVertexStride()const=0;
 	virtual const char* GetShaderSetup()const=0;
 	virtual ID3D11ShaderResourceView* GetTextureView(int n)const=0;
@@ -59,7 +60,8 @@ public:
 	virtual ID3D11Buffer* GetIndexBuffer()const { return indexBuffer; }
 	virtual int GetIndexCount()const{return indexCount;};
 	virtual int GetVertexStride()const { return sizeof(VertexPosNormTexUV); }
-	virtual const char* GetShaderSetup()const { return "model";}
+	virtual bool GetZEnabled()const { return true; };
+	virtual const char* GetShaderSetup()const { return "model"; }
 	virtual ID3D11ShaderResourceView* GetTextureView(int n)const {return textures[n];}
 	virtual ID3D11RenderTargetView* GetRTView()const {return RT;}
 	virtual void SetTextureView(int n, ID3D11ShaderResourceView* textureView){textures[n]=textureView;}
@@ -77,7 +79,7 @@ class CQuad : public IModel
 	ID3D11ShaderResourceView* textures[16];
 	ID3D11RenderTargetView* RT;
 public:
-	bool Create(ID3D11Device* device);
+	bool Create(ID3D11Device* device, float depth=0.0f);
 	CQuad()
 		: RT(nullptr)
 	{
@@ -89,6 +91,7 @@ public:
 	virtual ID3D11Buffer* GetIndexBuffer()const { return indexBuffer; }
 	virtual int GetIndexCount()const{return 6;}
 	virtual int GetVertexStride()const { return sizeof(VertexPosTexUV); }
+	virtual bool GetZEnabled()const { return false; };
 	virtual const char* GetShaderSetup()const { return shaderSetup; };
 	virtual ID3D11ShaderResourceView* GetTextureView(int n)const {return textures[n];};
 	virtual ID3D11RenderTargetView* GetRTView()const {return RT;};

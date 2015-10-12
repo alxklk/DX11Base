@@ -25,12 +25,11 @@ class CRenderer
 	ID3D11DepthStencilView* d3dDepthStencilView;
 	ID3D11Texture2D* d3dDepthStencilBuffer;
 
-	ID3D11DepthStencilState* d3dDepthStencilState;
+	ID3D11DepthStencilState* d3dDepthStencilStateOff;
+	ID3D11DepthStencilState* d3dDepthStencilStateOn;
 	ID3D11RasterizerState* d3dRasterizerState;
 	ID3D11SamplerState* d3dSamplerState;
 	D3D11_VIEWPORT Viewport;
-
-	ID3D11Buffer* constantBuffers[3];
 
 	void RenderModel(CModel* model);
 
@@ -40,6 +39,8 @@ class CRenderer
 	ID3D11PixelShader* LoadPixelShader(const _TCHAR* fileName, const char* entryPoint, const char* profile);
 
 	SShaderSetup* currentShaderSetup;
+
+	bool debug;
 
 public:
 
@@ -69,12 +70,11 @@ public:
 		, d3dRenderTargetView(nullptr)
 		, d3dDepthStencilView(nullptr)
 		, d3dDepthStencilBuffer(nullptr)
-		, d3dDepthStencilState(nullptr)
+		, d3dDepthStencilStateOff(nullptr)
+		, d3dDepthStencilStateOn(nullptr)
 		, d3dRasterizerState(nullptr)
+		, debug(false)
 	{
-		constantBuffers[0]=nullptr;
-		constantBuffers[1]=nullptr;
-		constantBuffers[2]=nullptr;
 		Viewport.Width=0;
 		Viewport.Height=0;
 		Viewport.TopLeftX=0.0f;
