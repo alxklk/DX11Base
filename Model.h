@@ -3,13 +3,7 @@
 #include "stdafx.h"
 
 using namespace DirectX;
-/*
-struct VertexPosColor
-{
-	XMFLOAT3 pos;
-	XMFLOAT3 col;
-};
-*/
+
 struct VertexPosTexUV
 {
 	XMFLOAT3 pos;

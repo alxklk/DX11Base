@@ -347,6 +347,9 @@ bool CRenderer::CreateShaderSetup(const char* setupName, const _TCHAR* vertexSha
 	ID3D11VertexShader* vertexShader=LoadVertexShader(vertexShaderFile, "main", "vs_4_0", &vsBlob);
 	ID3D11PixelShader* pixelShader=LoadPixelShader(pixelShaderFile, "main", "ps_4_0");
 
+	if(!vsBlob)
+		return false;
+
 	HRESULT hr;
 	hr=d3dDevice->CreateInputLayout(layoutDesc, nVL, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &inputLayout);
 	if(FAILED(hr))

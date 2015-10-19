@@ -81,7 +81,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	RECT wrect={0, 0, gAppState.width, gAppState.height};
 	AdjustWindowRectEx(&wrect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_APPWINDOW);
-	gAppState.win=CreateWindowEx(WS_EX_APPWINDOW, L"APP01", L"Masked Blur", WS_OVERLAPPEDWINDOW, -1920, 0,
+	gAppState.win=CreateWindowEx(WS_EX_APPWINDOW, L"APP01", L"Masked Blur", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
 		wrect.right-wrect.left, wrect.bottom-wrect.top, 0, 0, 0, 0);
 
 	ShowWindow(gAppState.win, SW_SHOWNORMAL);
@@ -220,6 +220,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		cb_quad.sz[1]=(float)gAppState.height;
 		cb_quad.mp[0]=(float)gAppState.lastMouseEvent.x;
 		cb_quad.mp[1]=(float)gAppState.lastMouseEvent.y;
+		cb_quad.mp[2]=(float)gAppState.lastMouseEvent.button_l;
 
 
 		renderer->UseShaderSetup("quad");
@@ -246,9 +247,6 @@ int _tmain(int argc, _TCHAR* argv[])
 				float dy=gAppState.lastMouseEvent.delta_y/100.0f;
 				float dx=gAppState.lastMouseEvent.delta_x/100.0f;
 
-//				cb_model.wm=XMMatrixMultiply(XMMatrixRotationX(dy), cb_model.wm);
-//				cb_model.wm=XMMatrixMultiply(XMMatrixRotationY(dx), cb_model.wm);
-
 				float l=sqrt(dx*dx+dy*dy);
 
 				XMFLOAT4 rotQuatV4(-dy*sin(l), dx*sin(l), 0, cos(l));
@@ -257,8 +255,6 @@ int _tmain(int argc, _TCHAR* argv[])
 				cb_model.wm=XMMatrixMultiply(cb_model.wm, XMMatrixRotationQuaternion(rotQuat));
 			}
 		}
-		//		for(int i=0; i<16; i++)
-//			cb_model.wm[i]=wrldm.r[i/4].m128_f32[i%4];
 		renderer->UseShaderSetup("model");
 		renderer->UpdateShaderConstants((void*)&cb_model);
 

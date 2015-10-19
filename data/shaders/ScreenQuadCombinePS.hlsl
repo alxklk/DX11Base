@@ -29,11 +29,20 @@ float4 main( PixelShaderInput IN ) : SV_TARGET0
 	uvscr*=scrsize.xy;
 	float2 mp=mpos.xy;
 
-	if(length(uvscr-mp)>200)
-		return ub;
+	if(!mpos.z)
+	{
+		if(uvscr.x<scrsize.x/2)
+			return ub;
+		else
+			return ub1;
+	}
 	else
-		return ub1;
-
+	{
+		if(length(uvscr-mp)>200)
+			return ub;
+		else
+			return ub1;
+	}
 
 	return float4(c.rgb/w,1);
 }
